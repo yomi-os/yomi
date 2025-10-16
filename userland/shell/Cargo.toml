@@ -1,0 +1,6 @@
+[package]
+name = "yomi-shell"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

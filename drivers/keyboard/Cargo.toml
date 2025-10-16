@@ -1,0 +1,6 @@
+[package]
+name = "yomi-driver-keyboard"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

@@ -1,0 +1,6 @@
+[package]
+name = "yomi-coreutils"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
