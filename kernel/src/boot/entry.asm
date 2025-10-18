@@ -1,17 +1,18 @@
 global _start
 extern kernel_main
 
-section .bss
-align 16
-stack_bottom:
-    resb 16384  ; 16KB stack
-stack_top:
-
 section .boot
 bits 32
+
+; Boot stack (must be in .boot section for physical addressing)
+align 16
+boot_stack_bottom:
+    times 4096 db 0  ; 4KB boot stack
+boot_stack_top:
+
 _start:
     ; Set up stack pointer
-    mov esp, stack_top
+    mov esp, boot_stack_top
 
     ; Save Multiboot2 magic and info address
     mov edi, eax    ; Magic number
@@ -32,10 +33,10 @@ _start:
     call enable_paging
 
     ; Load GDT
-    lgdt [gdt64.pointer]
+    lgdt [boot_gdt64.pointer]
 
-    ; Jump to 64-bit mode
-    jmp gdt64.code:long_mode_start
+    ; Jump to 64-bit mode (trampoline at physical address)
+    jmp boot_gdt64.code:long_mode_start_trampoline
 
 .no_cpuid:
     mov al, "C"
@@ -90,19 +91,19 @@ check_long_mode:
 ; Set up page tables
 setup_page_tables:
     ; P4 table: Set up identity mapping (P4[0])
-    mov eax, p3_table
+    mov eax, boot_p3_table
     or eax, 0b11  ; present + writable
-    mov [p4_table], eax
+    mov [boot_p4_table], eax
 
     ; P4 table: Set up higher half mapping (P4[511])
-    mov eax, p3_table
+    mov eax, boot_p3_table
     or eax, 0b11
-    mov [p4_table + 511 * 8], eax
+    mov [boot_p4_table + 511 * 8], eax
 
     ; P3 table: Set pointer to P2 table
-    mov eax, p2_table
+    mov eax, boot_p2_table
     or eax, 0b11
-    mov [p3_table], eax
+    mov [boot_p3_table], eax
 
     ; P2 table: Map 512 2MB pages (total 1GB)
     mov ecx, 0
@@ -110,7 +111,7 @@ setup_page_tables:
     mov eax, 0x200000   ; 2MB
     mul ecx
     or eax, 0b10000011  ; present + writable + huge page
-    mov [p2_table + ecx * 8], eax
+    mov [boot_p2_table + ecx * 8], eax
 
     inc ecx
     cmp ecx, 512
@@ -121,7 +122,7 @@ setup_page_tables:
 ; Enable paging
 enable_paging:
     ; Load P4 table into CR3
-    mov eax, p4_table
+    mov eax, boot_p4_table
     mov cr3, eax
 
     ; Enable PAE
@@ -142,23 +143,31 @@ enable_paging:
 
     ret
 
-section .bss
+; Boot page tables (must be in .boot section for physical addressing)
 align 4096
-p4_table:
-    resb 4096
-p3_table:
-    resb 4096
-p2_table:
-    resb 4096
+boot_p4_table:
+    times 4096 db 0
+boot_p3_table:
+    times 4096 db 0
+boot_p2_table:
+    times 4096 db 0
 
-section .rodata
-gdt64:
+; Boot GDT (must be in .boot section for physical addressing)
+align 16
+boot_gdt64:
     dq 0  ; null descriptor
-.code: equ $ - gdt64
+.code: equ $ - boot_gdt64
     dq (1<<43) | (1<<44) | (1<<47) | (1<<53)  ; code segment
 .pointer:
-    dw $ - gdt64 - 1
-    dq gdt64
+    dw $ - boot_gdt64 - 1
+    dq boot_gdt64
 
-; 64-bit mode entry point (defined in boot64.asm)
-extern long_mode_start
+; 64-bit mode entry point (trampoline defined in boot64.asm)
+extern long_mode_start_trampoline
+
+; Kernel stack for use after entering higher half
+section .bss
+align 16
+stack_bottom:
+    resb 16384  ; 16KB stack
+stack_top:
