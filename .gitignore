@@ -20,3 +20,6 @@ Thumbs.db
 build/
 
 docs/
+
+# Reference files (kept locally but not committed)
+ref/

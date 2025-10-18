@@ -11,6 +11,16 @@ members = [
     "xtask",
 ]
 
+# xtask is excluded from default members to avoid building it with the no_std target
+default-members = [
+    "kernel",
+    "drivers/keyboard",
+    "drivers/network",
+    "userland/init",
+    "userland/shell",
+    "userland/coreutils",
+]
+
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
