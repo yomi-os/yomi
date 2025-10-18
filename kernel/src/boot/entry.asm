@@ -7,7 +7,7 @@ stack_bottom:
     resb 16384  ; 16KB stack
 stack_top:
 
-section .text._start
+section .boot
 bits 32
 _start:
     ; Set up stack pointer
@@ -89,10 +89,15 @@ check_long_mode:
 
 ; Set up page tables
 setup_page_tables:
-    ; P4 table: Set pointer to P3 table
+    ; P4 table: Set up identity mapping (P4[0])
     mov eax, p3_table
     or eax, 0b11  ; present + writable
     mov [p4_table], eax
+
+    ; P4 table: Set up higher half mapping (P4[511])
+    mov eax, p3_table
+    or eax, 0b11
+    mov [p4_table + 511 * 8], eax
 
     ; P3 table: Set pointer to P2 table
     mov eax, p2_table
