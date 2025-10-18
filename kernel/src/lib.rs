@@ -3,8 +3,10 @@
 use core::panic::PanicInfo;
 
 pub mod boot;
+pub mod memory;
 
 pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
+pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};
 
 /// Kernel main entry point called from boot64.asm
 #[no_mangle]
