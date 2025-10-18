@@ -9,7 +9,8 @@ fn main() {
     // List of assembly files to compile
     let asm_files = vec![
         ("multiboot2.asm", "multiboot2.o"),
-        ("boot.asm", "boot.o"),
+        ("entry.asm", "entry.o"),
+        ("boot64.asm", "boot64.o"),
     ];
 
     let mut object_files = Vec::new();
