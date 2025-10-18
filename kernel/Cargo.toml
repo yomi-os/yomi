@@ -9,3 +9,7 @@ bitflags = "2.4"
 
 [lib]
 crate-type = ["staticlib"]
+
+[[bin]]
+name = "yomi-kernel"
+path = "src/main.rs"

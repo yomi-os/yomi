@@ -9,4 +9,6 @@ build-std-features = ["compiler-builtins-mem"]
 rustflags = [
     "-C", "link-arg=--nmagic",
     "-C", "link-arg=--no-dynamic-linker",
+    "-C", "link-arg=-Tkernel/linker.ld",
+    "-C", "relocation-model=static",
 ]
