@@ -1,26 +1,11 @@
 [package]
 name = "yomi-kernel"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
+version = "0.1.0"
+edition = "2021"
 
 [dependencies]
-spin.workspace = true
-lazy_static.workspace = true
-bitflags.workspace = true
-linked_list_allocator.workspace = true
-
-uart_16550 = "0.2"
-x86_64 = "0.14"
-pic8259 = "0.10"
-
-[dependencies.bootloader]
-version = "0.9"
-features = ["map_physical_memory"]
+spin = "0.9"
+bitflags = "2.4"
 
 [lib]
 crate-type = ["staticlib"]
-
-[[bin]]
-name = "yomi-kernel"
-path = "src/main.rs"
