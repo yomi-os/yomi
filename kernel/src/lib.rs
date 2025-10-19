@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(alloc_error_handler)]
+#![feature(abi_x86_interrupt)]
 
 extern crate alloc;
 
@@ -7,6 +8,7 @@ use core::panic::PanicInfo;
 
 pub mod boot;
 pub mod memory;
+pub mod interrupts;
 
 pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
 pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};
@@ -22,6 +24,15 @@ pub extern "C" fn kernel_main(_multiboot_magic: u32, _multiboot_info: usize) -> 
 
     // Initialize heap allocator
     memory::init_heap();
+
+    // Initialize Interrupt Descriptor Table
+    interrupts::init();
+
+    // Test breakpoint exception
+    // This should be caught by the breakpoint handler and return normally
+    unsafe {
+        core::arch::asm!("int3");
+    }
 
     // Test heap allocation with Vec
     let mut vec = vec![1, 2, 3];
