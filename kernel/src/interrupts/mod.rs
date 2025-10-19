@@ -4,6 +4,8 @@
 
 pub mod idt;
 pub mod handlers;
+pub mod tss;
+pub mod gdt;
 
 use idt::InterruptDescriptorTable;
 use spin::Once;
@@ -15,13 +17,22 @@ static IDT: Once<InterruptDescriptorTable> = Once::new();
 
 /// Initializes the Interrupt Descriptor Table
 ///
-/// This function sets up all exception handlers and loads the IDT into the CPU.
+/// This function sets up the GDT, TSS with IST stacks, and all exception handlers.
 /// It should be called early in the kernel initialization process.
 ///
 /// # Panics
 ///
 /// Panics if called more than once.
 pub fn init() {
+    // Step 1: Initialize TSS with IST stacks
+    tss::init();
+
+    // Step 2: Load GDT with TSS descriptor
+    unsafe {
+        gdt::init(tss::get_tss());
+    }
+
+    // Step 3: Initialize and load IDT
     let idt = IDT.call_once(|| {
         let mut idt = InterruptDescriptorTable::new();
 
@@ -36,8 +47,10 @@ pub fn init() {
         idt.device_not_available.set_handler_fn(handlers::device_not_available_handler);
 
         // Double Fault handler (diverging)
+        // Use IST index 1 for dedicated stack to prevent triple-fault on stack corruption
         idt.double_fault
-            .set_handler_fn_diverging_with_error_code(handlers::double_fault_handler);
+            .set_handler_fn_diverging_with_error_code(handlers::double_fault_handler)
+            .set_ist(1);
 
         // Handlers with error codes
         idt.invalid_tss

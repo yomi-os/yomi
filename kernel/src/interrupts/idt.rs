@@ -217,9 +217,9 @@ pub struct InterruptStackFrame {
 
 /// Entry options (Type and attributes field)
 ///
-/// Bits 0-3: Gate Type (0b1110 = Interrupt Gate)
-/// Bits 4-7: Reserved (0)
-/// Bits 8-11: Reserved (0)
+/// Bits 0-2: IST (Interrupt Stack Table) offset (0 = no IST, 1-7 = IST index)
+/// Bits 3-7: Reserved (0)
+/// Bits 8-11: Gate Type (0b1110 = Interrupt Gate)
 /// Bit 12: Reserved (0)
 /// Bits 13-14: DPL (Descriptor Privilege Level)
 /// Bit 15: Present
@@ -252,6 +252,21 @@ impl EntryOptions {
     pub fn set_privilege_level(&mut self, dpl: u16) -> &mut Self {
         self.0 &= !(0b11 << 13); // Clear DPL bits
         self.0 |= (dpl & 0b11) << 13; // Set new DPL
+        self
+    }
+
+    /// Sets the IST (Interrupt Stack Table) index
+    ///
+    /// IST provides dedicated stacks for critical interrupts.
+    /// Valid values are 0 (no IST) or 1-7 (IST index).
+    ///
+    /// # Panics
+    ///
+    /// Panics if `ist_index` is greater than 7.
+    pub fn set_ist(&mut self, ist_index: u8) -> &mut Self {
+        assert!(ist_index <= 7, "IST index must be in range 0-7");
+        self.0 &= !0b111; // Clear IST bits (bits 0-2)
+        self.0 |= ist_index as u16; // Set new IST index
         self
     }
 }
