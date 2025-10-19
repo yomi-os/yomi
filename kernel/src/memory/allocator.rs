@@ -42,8 +42,14 @@ impl BumpAllocator {
     /// - The memory region `[heap_start, heap_start + heap_size)` is valid
     /// - This function is called only once
     pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
+        debug_assert!(
+            self.heap_start == 0 && self.heap_end == 0 && self.next == 0 && self.allocations == 0,
+            "BumpAllocator::init called more than once"
+        );
+        let end = heap_start.checked_add(heap_size)
+            .expect("heap region overflow");
         self.heap_start = heap_start;
-        self.heap_end = heap_start + heap_size;
+        self.heap_end = end;
         self.next = heap_start;
     }
 
@@ -69,8 +75,11 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let mut allocator = self.lock();
 
-        // Align the allocation start address
-        let alloc_start = align_up(allocator.next, layout.align());
+        // Align the allocation start address (checked)
+        let alloc_start = match align_up_checked(allocator.next, layout.align()) {
+            Some(a) => a,
+            None => return ptr::null_mut(),
+        };
 
         // Check for overflow
         let alloc_end = match alloc_start.checked_add(layout.size()) {
@@ -101,7 +110,7 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
     }
 }
 
-/// Align address upward to the given alignment
+/// Align address upward to the given alignment (checked for overflow)
 ///
 /// # Arguments
 ///
@@ -110,11 +119,11 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
 ///
 /// # Returns
 ///
-/// The smallest address >= `addr` that is aligned to `align`
-fn align_up(addr: usize, align: usize) -> usize {
-    // align must be a power of 2
+/// Some(aligned_addr) if successful, None if overflow would occur
+fn align_up_checked(addr: usize, align: usize) -> Option<usize> {
     debug_assert!(align.is_power_of_two());
-    (addr + align - 1) & !(align - 1)
+    let mask = align - 1;
+    addr.checked_add(mask).map(|x| x & !mask)
 }
 
 /// A wrapper around a type that provides interior mutability with a Mutex
