@@ -9,6 +9,7 @@ use core::panic::PanicInfo;
 pub mod boot;
 pub mod memory;
 pub mod interrupts;
+pub mod time;
 
 pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
 pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};
@@ -27,6 +28,9 @@ pub extern "C" fn kernel_main(_multiboot_magic: u32, _multiboot_info: usize) -> 
 
     // Initialize Interrupt Descriptor Table
     interrupts::init();
+
+    // Enable timer interrupts
+    interrupts::enable_timer_interrupts();
 
     // Test breakpoint exception
     // This should be caught by the breakpoint handler and return normally

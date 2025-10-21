@@ -6,6 +6,10 @@ pub mod idt;
 pub mod handlers;
 pub mod tss;
 pub mod gdt;
+pub mod port;
+pub mod pic;
+pub mod pit;
+pub mod timer;
 
 use idt::InterruptDescriptorTable;
 use spin::Once;
@@ -14,6 +18,13 @@ use spin::Once;
 ///
 /// We use `spin::Once` to ensure the IDT is initialized exactly once.
 static IDT: Once<InterruptDescriptorTable> = Once::new();
+
+/// IRQ (Interrupt Request) offsets
+///
+/// Hardware interrupts (IRQs) are mapped to interrupt vectors 32-47.
+/// - IRQ 0-7: Master PIC (vectors 32-39)
+/// - IRQ 8-15: Slave PIC (vectors 40-47)
+const IRQ_OFFSET: usize = 32;
 
 /// Initializes the Interrupt Descriptor Table
 ///
@@ -72,6 +83,10 @@ pub fn init() {
             .set_handler_fn_diverging(handlers::machine_check_handler);
         idt.simd_floating_point.set_handler_fn(handlers::simd_floating_point_handler);
 
+        // Hardware interrupt handlers (IRQs)
+        // Timer (IRQ 0 → vector 32)
+        idt.get_interrupt_entry_mut(0).set_handler_fn(timer::timer_interrupt_handler);
+
         idt
     });
 
@@ -80,6 +95,46 @@ pub fn init() {
 
     // TODO: Log initialization when printk is available
     // printk!("IDT initialized");
+}
+
+/// Initializes and enables timer interrupts
+///
+/// This function:
+/// 1. Initializes the PIC (Programmable Interrupt Controller)
+/// 2. Configures the PIT (Programmable Interval Timer) to the desired frequency
+/// 3. Unmasks the timer interrupt (IRQ 0)
+/// 4. Enables interrupts globally
+///
+/// # Safety
+///
+/// This function should only be called once during kernel initialization,
+/// after the IDT has been set up.
+///
+/// # Panics
+///
+/// Panics if called before `init()`.
+pub fn enable_timer_interrupts() {
+    // Step 1: Initialize PIC
+    unsafe {
+        pic::PICS.lock().initialize();
+    }
+
+    // Step 2: Configure PIT to desired frequency
+    let mut pit = pit::Pit::new();
+    pit.set_frequency(timer::TIMER_FREQUENCY);
+
+    // Step 3: Enable timer interrupt (IRQ 0)
+    unsafe {
+        pic::PICS.lock().unmask(0);
+    }
+
+    // Step 4: Enable interrupts globally
+    unsafe {
+        core::arch::asm!("sti");
+    }
+
+    // TODO: Log when printk is available
+    // printk!("Timer interrupts enabled at {} Hz", timer::TIMER_FREQUENCY);
 }
 
 /// Re-exports for convenience
