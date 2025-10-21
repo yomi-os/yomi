@@ -86,6 +86,19 @@ impl InterruptDescriptorTable {
             core::arch::asm!("lidt [{}]", in(reg) &ptr, options(readonly, nostack, preserves_flags));
         }
     }
+
+    /// Returns a mutable reference to the interrupt entry at the specified index
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - Index into the interrupts array (0-223 for vectors 32-255)
+    ///
+    /// # Panics
+    ///
+    /// Panics if the index is out of bounds.
+    pub fn get_interrupt_entry_mut(&mut self, index: usize) -> &mut Entry {
+        &mut self.interrupts[index]
+    }
 }
 
 /// IDT entry (16 bytes)
