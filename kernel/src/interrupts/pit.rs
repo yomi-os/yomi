@@ -49,8 +49,19 @@ impl Pit {
     /// This function writes to PIT I/O ports and should be called during
     /// kernel initialization before enabling timer interrupts.
     pub fn set_frequency(&mut self, frequency: u32) {
+        // Validate frequency range
+        assert!(frequency > 0, "PIT frequency must be greater than 0");
+
         // Calculate divisor
         let divisor = PIT_FREQUENCY / frequency;
+
+        // Ensure divisor fits in u16 and meets mode 3 requirements
+        assert!(
+            divisor >= 2 && divisor <= 65535,
+            "PIT divisor {} out of range (2-65535); frequency {} Hz is invalid",
+            divisor,
+            frequency
+        );
 
         unsafe {
             // Channel 0, Mode 3 (square wave generator), 16-bit binary
@@ -59,8 +70,9 @@ impl Pit {
             self.command.write(0x36);
 
             // Send divisor (low byte, then high byte)
+            let divisor = divisor as u16;
             self.channel_0.write((divisor & 0xFF) as u8);
-            self.channel_0.write(((divisor >> 8) & 0xFF) as u8);
+            self.channel_0.write((divisor >> 8) as u8);
         }
     }
 }

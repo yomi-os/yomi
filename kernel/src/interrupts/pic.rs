@@ -162,13 +162,18 @@ impl ChainedPics {
     ///
     /// Modifies interrupt mask registers.
     pub unsafe fn unmask(&mut self, irq: u8) {
-        let pic = if irq < 8 {
-            &mut self.pics[0]
+        debug_assert!(irq < 16);
+        if irq >= 8 {
+            // Ensure master's cascade line (IRQ2) is unmasked
+            let m = self.pics[0].read_mask() & !(1u8 << 2);
+            self.pics[0].set_mask(m);
+        }
+        let (pic, line) = if irq < 8 {
+            (&mut self.pics[0], irq)
         } else {
-            &mut self.pics[1]
+            (&mut self.pics[1], irq - 8)
         };
-        let line = irq % 8;
-        let mask = pic.read_mask() & !(1 << line);
+        let mask = pic.read_mask() & !(1u8 << line);
         pic.set_mask(mask);
     }
 

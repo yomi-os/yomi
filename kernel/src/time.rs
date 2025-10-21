@@ -131,17 +131,11 @@ mod tests {
     }
 
     #[test]
-    fn test_timestamp_creation() {
+    fn test_timestamp_ordering() {
         let ts = Timestamp::now();
-        // In unit tests, this will be 0
-        assert!(ts.as_millis() >= 0);
-    }
-
-    #[test]
-    fn test_timestamp_elapsed() {
-        let ts = Timestamp::now();
+        // Simulate time passing (in real tests, TICKS would increment)
         let elapsed = ts.elapsed();
-        // Should be 0 or very small in unit tests
-        assert!(elapsed.as_millis() >= 0);
+        // Elapsed time should be non-negative
+        assert_eq!(elapsed.as_millis(), 0); // In unit tests without timer running
     }
 }

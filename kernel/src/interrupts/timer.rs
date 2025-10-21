@@ -109,9 +109,10 @@ mod tests {
 
     #[test]
     fn test_uptime_calculation() {
-        // Test uptime calculation logic
-        // Note: TICKS will be 0 in unit tests
-        let uptime = uptime_ms();
-        assert!(uptime >= 0);
+        // Test uptime calculation with known tick values
+        // Manually set TICKS for testing purposes
+        TICKS.store(100, Ordering::Relaxed);
+        assert_eq!(uptime_ms(), 1000); // 100 ticks at 100 Hz = 1000 ms
+        assert_eq!(uptime_seconds(), 1);
     }
 }
