@@ -10,6 +10,7 @@ pub mod boot;
 pub mod memory;
 pub mod interrupts;
 pub mod time;
+pub mod serial;
 
 pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
 pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};

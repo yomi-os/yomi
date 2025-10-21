@@ -11,8 +11,8 @@ mod boot;
 mod memory;
 mod interrupts;
 mod time;
+mod serial;
 
-use boot::multiboot2::Multiboot2Info;
 use alloc::{vec, boxed::Box};
 
 /// Kernel entry point called from boot.asm
