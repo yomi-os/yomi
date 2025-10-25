@@ -73,6 +73,17 @@ impl SerialPort {
             // Send test byte
             self.data.write(0xAE);
 
+            // Wait for data to be available
+            let mut timeout = 10000;
+            while self.line_status.read() & LINE_STATUS_DATA_READY == 0 {
+                timeout -= 1;
+                if timeout == 0 {
+                    // Timeout: Serial port is faulty
+                    return;
+                }
+                core::hint::spin_loop();
+            }
+
             // Check if same byte can be received
             if self.data.read() != 0xAE {
                 // Serial port is faulty
