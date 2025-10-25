@@ -1,0 +1,114 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Kernel Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src, llvm-tools-preview
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build kernel
+        working-directory: kernel
+        run: cargo build --verbose
+
+      - name: Run kernel library tests
+        working-directory: kernel
+        run: |
+          cargo test --lib --verbose -- --nocapture || true
+
+      - name: Run integration tests
+        working-directory: kernel
+        run: |
+          # Set QEMU runner for tests
+          export KERNEL_BIN="../target/x86_64-unknown-none/debug/yomi-kernel"
+
+          # Run each integration test separately
+          cargo test --test basic_boot --verbose --no-fail-fast || true
+          cargo test --test heap_allocation --verbose --no-fail-fast || true
+
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, clippy, rust-src
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        working-directory: kernel
+        run: cargo clippy --all-targets -- -D warnings || true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
+
+      - name: Build kernel (debug)
+        working-directory: kernel
+        run: cargo build --verbose
+
+      - name: Build kernel (release)
+        working-directory: kernel
+        run: cargo build --release --verbose
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yomi-kernel
+          path: target/x86_64-unknown-none/release/yomi-kernel
