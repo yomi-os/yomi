@@ -13,3 +13,6 @@ rustflags = [
     "-C", "link-arg=-Tkernel/linker.ld",
     "-C", "relocation-model=static",
 ]
+
+# Test runner configuration
+runner = "sh -c 'KERNEL_BIN=$0 ../scripts/run-qemu.sh test'"
