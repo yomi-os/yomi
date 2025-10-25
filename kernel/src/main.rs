@@ -12,8 +12,10 @@ mod memory;
 mod interrupts;
 mod time;
 mod serial;
+mod io;
 
 use alloc::{vec, boxed::Box};
+use interrupts::timer;
 
 /// Kernel entry point called from boot.asm
 ///
@@ -22,36 +24,56 @@ use alloc::{vec, boxed::Box};
 /// * `info_addr` - Physical address of Multiboot2 information structure
 #[no_mangle]
 pub extern "C" fn kernel_main(_magic: u32, _info_addr: usize) -> ! {
-    // Initialize multiboot2 information
-    // let _multiboot_info = unsafe { Multiboot2Info::from_ptr(magic, info_addr) };
+    // Initialize serial port for logging
+    serial::init();
+
+    log_info!("YomiOS Kernel v{}", env!("CARGO_PKG_VERSION"));
+    log_debug!("Debug logging enabled");
 
     // Initialize heap allocator
+    log_info!("Initializing memory subsystem...");
     memory::init_heap();
+    log_info!("Memory subsystem initialized");
 
     // Initialize Interrupt Descriptor Table
+    log_info!("Initializing interrupt handlers...");
     interrupts::init();
+    log_info!("IDT initialized");
 
     // Enable timer interrupts
+    log_info!("Enabling timer interrupts...");
     interrupts::enable_timer_interrupts();
+    log_info!("Timer interrupts enabled at {} Hz", timer::TIMER_FREQUENCY);
 
     // Test breakpoint exception
     // This should be caught by the breakpoint handler and return normally
+    log_debug!("Testing breakpoint exception...");
     unsafe {
         core::arch::asm!("int3");
     }
+    log_debug!("Breakpoint exception handled successfully");
 
     // Test heap allocation with Vec
     let mut vec = vec![1, 2, 3];
     vec.push(4);
-    // TODO: printk!("Vec test: {:?}", vec);
+    log_info!("Vec test passed: {} elements", vec.len());
 
     // Test heap allocation with Box
     let boxed = Box::new(42);
-    // TODO: printk!("Box test: {}", boxed);
+    log_info!("Box test passed: value = {}", *boxed);
+
+    // Test different log levels
+    log_warn!("This is a warning message");
+    log_error!("This is an error message (for testing)");
+
+    // Test printk! macro for backward compatibility
+    printk!("Kernel initialization complete!");
 
     // Prevent optimization from removing these allocations
     core::hint::black_box(vec);
     core::hint::black_box(boxed);
+
+    log_info!("Entering idle loop...");
 
     // Hang - timer interrupts will continue to fire
     loop {
@@ -62,7 +84,9 @@ pub extern "C" fn kernel_main(_magic: u32, _info_addr: usize) -> ! {
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    crate::log_fatal!("KERNEL PANIC: {}", info);
+
     loop {
         unsafe {
             core::arch::asm!("hlt");
