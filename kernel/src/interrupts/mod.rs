@@ -93,8 +93,7 @@ pub fn init() {
     // Load the IDT into the CPU
     idt.load();
 
-    // TODO: Log initialization when printk is available
-    // printk!("IDT initialized");
+    crate::log_debug!("IDT loaded with {} exception handlers", 20);
 }
 
 /// Initializes and enables timer interrupts
@@ -133,8 +132,78 @@ pub fn enable_timer_interrupts() {
         core::arch::asm!("sti");
     }
 
-    // TODO: Log when printk is available
-    // printk!("Timer interrupts enabled at {} Hz", timer::TIMER_FREQUENCY);
+    crate::log_debug!("PIC and PIT initialized, interrupts enabled");
+}
+
+/// Disables interrupts
+///
+/// # Safety
+///
+/// This function modifies the CPU's interrupt flag.
+/// It should only be used when necessary to prevent race conditions.
+#[inline]
+pub unsafe fn disable() {
+    core::arch::asm!("cli", options(nomem, nostack));
+}
+
+/// Enables interrupts
+///
+/// # Safety
+///
+/// This function modifies the CPU's interrupt flag.
+/// It should only be called when it's safe to handle interrupts.
+#[inline]
+pub unsafe fn enable() {
+    core::arch::asm!("sti", options(nomem, nostack));
+}
+
+/// Checks if interrupts are enabled
+///
+/// # Returns
+///
+/// `true` if interrupts are enabled, `false` otherwise
+#[inline]
+pub fn are_enabled() -> bool {
+    let flags: u64;
+    unsafe {
+        core::arch::asm!("pushfq; pop {}", out(reg) flags, options(nomem, preserves_flags));
+    }
+    (flags & (1 << 9)) != 0 // Check IF (Interrupt Flag) bit
+}
+
+/// Executes a closure with interrupts disabled
+///
+/// This function disables interrupts before executing the closure,
+/// and restores the previous interrupt state afterward.
+///
+/// # Safety
+///
+/// This function is safe because it properly restores the interrupt state.
+///
+/// # Examples
+///
+/// ```
+/// interrupts::without_interrupts(|| {
+///     // Critical section - interrupts are disabled here
+/// });
+/// ```
+pub fn without_interrupts<F, R>(f: F) -> R
+where
+    F: FnOnce() -> R,
+{
+    let enabled = are_enabled();
+
+    if enabled {
+        unsafe { disable(); }
+    }
+
+    let result = f();
+
+    if enabled {
+        unsafe { enable(); }
+    }
+
+    result
 }
 
 /// Re-exports for convenience

@@ -19,7 +19,6 @@ Thumbs.db
 *.img
 build/
 
-docs/
-
 # Reference files (kept locally but not committed)
 ref/
+plan/

@@ -8,10 +8,7 @@ use super::idt::InterruptStackFrame;
 ///
 /// Occurs when division by zero or division overflow happens.
 pub extern "x86-interrupt" fn divide_error_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: DIVIDE ERROR\n{:#?}", stack_frame);
-
-    // For now, just halt
+    crate::log_error!("EXCEPTION: DIVIDE ERROR");
     panic_with_stack_frame("DIVIDE ERROR", stack_frame);
 }
 
@@ -19,9 +16,7 @@ pub extern "x86-interrupt" fn divide_error_handler(stack_frame: InterruptStackFr
 ///
 /// Occurs when a debug event happens (breakpoint, single-step, etc.).
 pub extern "x86-interrupt" fn debug_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: DEBUG\n{:#?}", stack_frame);
-
+    crate::log_debug!("EXCEPTION: DEBUG");
     panic_with_stack_frame("DEBUG", stack_frame);
 }
 
@@ -29,9 +24,7 @@ pub extern "x86-interrupt" fn debug_handler(stack_frame: InterruptStackFrame) {
 ///
 /// Hardware NMI interrupt.
 pub extern "x86-interrupt" fn non_maskable_interrupt_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: NON-MASKABLE INTERRUPT\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: NON-MASKABLE INTERRUPT");
     panic_with_stack_frame("NON-MASKABLE INTERRUPT", stack_frame);
 }
 
@@ -40,8 +33,7 @@ pub extern "x86-interrupt" fn non_maskable_interrupt_handler(stack_frame: Interr
 /// Occurs when an INT3 instruction is executed.
 /// This exception is commonly used by debuggers and should not panic.
 pub extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+    crate::log_debug!("EXCEPTION: BREAKPOINT at RIP={:#x}", stack_frame.instruction_pointer);
 
     // Breakpoint is expected in debugging, so we don't panic
     // Just prevent optimization from removing the stack_frame
@@ -52,9 +44,7 @@ pub extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFram
 ///
 /// Occurs when an INTO instruction is executed with OF flag set.
 pub extern "x86-interrupt" fn overflow_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: OVERFLOW\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: OVERFLOW");
     panic_with_stack_frame("OVERFLOW", stack_frame);
 }
 
@@ -62,9 +52,7 @@ pub extern "x86-interrupt" fn overflow_handler(stack_frame: InterruptStackFrame)
 ///
 /// Occurs when a BOUND instruction detects out-of-bounds array access.
 pub extern "x86-interrupt" fn bound_range_exceeded_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: BOUND RANGE EXCEEDED\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: BOUND RANGE EXCEEDED");
     panic_with_stack_frame("BOUND RANGE EXCEEDED", stack_frame);
 }
 
@@ -72,9 +60,7 @@ pub extern "x86-interrupt" fn bound_range_exceeded_handler(stack_frame: Interrup
 ///
 /// Occurs when the processor tries to execute an invalid or undefined opcode.
 pub extern "x86-interrupt" fn invalid_opcode_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: INVALID OPCODE\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: INVALID OPCODE");
     panic_with_stack_frame("INVALID OPCODE", stack_frame);
 }
 
@@ -82,9 +68,7 @@ pub extern "x86-interrupt" fn invalid_opcode_handler(stack_frame: InterruptStack
 ///
 /// Occurs when an FPU instruction is executed but the FPU is not available.
 pub extern "x86-interrupt" fn device_not_available_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: DEVICE NOT AVAILABLE\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: DEVICE NOT AVAILABLE");
     panic_with_stack_frame("DEVICE NOT AVAILABLE", stack_frame);
 }
 
@@ -98,8 +82,9 @@ pub extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) -> ! {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: DOUBLE FAULT (Error Code: 0x{:x})\n{:#?}", error_code, stack_frame);
+    crate::log_fatal!("EXCEPTION: DOUBLE FAULT (Error Code: {:#x})", error_code);
+    crate::log_fatal!("  RIP: {:#x}", stack_frame.instruction_pointer);
+    crate::log_fatal!("  RSP: {:#x}", stack_frame.stack_pointer);
 
     // Prevent optimization from removing these
     core::hint::black_box(&stack_frame);
@@ -115,9 +100,7 @@ pub extern "x86-interrupt" fn invalid_tss_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: INVALID TSS (Error Code: 0x{:x})\n{:#?}", error_code, stack_frame);
-
+    crate::log_error!("EXCEPTION: INVALID TSS (Error Code: {:#x})", error_code);
     core::hint::black_box(error_code);
     panic_with_stack_frame("INVALID TSS", stack_frame);
 }
@@ -129,9 +112,7 @@ pub extern "x86-interrupt" fn segment_not_present_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: SEGMENT NOT PRESENT (Error Code: 0x{:x})\n{:#?}", error_code, stack_frame);
-
+    crate::log_error!("EXCEPTION: SEGMENT NOT PRESENT (Error Code: {:#x})", error_code);
     core::hint::black_box(error_code);
     panic_with_stack_frame("SEGMENT NOT PRESENT", stack_frame);
 }
@@ -143,9 +124,7 @@ pub extern "x86-interrupt" fn stack_segment_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: STACK-SEGMENT FAULT (Error Code: 0x{:x})\n{:#?}", error_code, stack_frame);
-
+    crate::log_error!("EXCEPTION: STACK-SEGMENT FAULT (Error Code: {:#x})", error_code);
     core::hint::black_box(error_code);
     panic_with_stack_frame("STACK-SEGMENT FAULT", stack_frame);
 }
@@ -157,10 +136,9 @@ pub extern "x86-interrupt" fn general_protection_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: GENERAL PROTECTION FAULT");
-    // printk!("Error Code: 0x{:x}", error_code);
-    // printk!("{:#?}", stack_frame);
+    crate::log_error!("EXCEPTION: GENERAL PROTECTION FAULT");
+    crate::log_error!("  Error Code: {:#x}", error_code);
+    crate::log_error!("  RIP: {:#x}", stack_frame.instruction_pointer);
 
     core::hint::black_box(error_code);
     panic_with_stack_frame("GENERAL PROTECTION FAULT", stack_frame);
@@ -182,17 +160,20 @@ pub extern "x86-interrupt" fn page_fault_handler(
         core::arch::asm!("mov {}, cr2", out(reg) fault_addr, options(nomem, nostack, preserves_flags));
     }
 
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: PAGE FAULT");
-    // printk!("Accessed Address: 0x{:016x}", fault_addr);
-    // printk!("Error Code: 0x{:x}", error_code);
+    crate::log_error!("EXCEPTION: PAGE FAULT");
+    crate::log_error!("  Accessed Address: {:#x}", fault_addr);
+    crate::log_error!("  Error Code: {:#x}", error_code);
+
     // Parse error code:
-    // Bit 0: Present (0 = not present, 1 = protection violation)
-    // Bit 1: Write (0 = read, 1 = write)
-    // Bit 2: User (0 = kernel, 1 = user)
-    // Bit 3: Reserved Write (1 = reserved bit set)
-    // Bit 4: Instruction Fetch (1 = instruction fetch)
-    // printk!("{:#?}", stack_frame);
+    let present = (error_code & 0x1) != 0;
+    let write = (error_code & 0x2) != 0;
+    let user = (error_code & 0x4) != 0;
+    let reserved = (error_code & 0x8) != 0;
+    let instruction = (error_code & 0x10) != 0;
+
+    crate::log_error!("    Present: {}, Write: {}, User: {}, Reserved: {}, Instruction: {}",
+                     present, write, user, reserved, instruction);
+    crate::log_error!("  RIP: {:#x}", stack_frame.instruction_pointer);
 
     core::hint::black_box(fault_addr);
     core::hint::black_box(error_code);
@@ -203,9 +184,7 @@ pub extern "x86-interrupt" fn page_fault_handler(
 ///
 /// Occurs when the x87 FPU detects a floating-point error.
 pub extern "x86-interrupt" fn x87_floating_point_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: x87 FLOATING-POINT\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: x87 FLOATING-POINT");
     panic_with_stack_frame("x87 FLOATING-POINT", stack_frame);
 }
 
@@ -216,9 +195,7 @@ pub extern "x86-interrupt" fn alignment_check_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: ALIGNMENT CHECK (Error Code: 0x{:x})\n{:#?}", error_code, stack_frame);
-
+    crate::log_error!("EXCEPTION: ALIGNMENT CHECK (Error Code: {:#x})", error_code);
     core::hint::black_box(error_code);
     panic_with_stack_frame("ALIGNMENT CHECK", stack_frame);
 }
@@ -227,8 +204,8 @@ pub extern "x86-interrupt" fn alignment_check_handler(
 ///
 /// Occurs when the processor detects internal errors or bus errors.
 pub extern "x86-interrupt" fn machine_check_handler(stack_frame: InterruptStackFrame) -> ! {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: MACHINE CHECK\n{:#?}", stack_frame);
+    crate::log_fatal!("EXCEPTION: MACHINE CHECK");
+    crate::log_fatal!("  RIP: {:#x}", stack_frame.instruction_pointer);
 
     core::hint::black_box(&stack_frame);
     panic!("EXCEPTION: MACHINE CHECK");
@@ -238,27 +215,24 @@ pub extern "x86-interrupt" fn machine_check_handler(stack_frame: InterruptStackF
 ///
 /// Occurs when an unmasked SSE floating-point exception is detected.
 pub extern "x86-interrupt" fn simd_floating_point_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Use printk! when available
-    // printk!("EXCEPTION: SIMD FLOATING-POINT\n{:#?}", stack_frame);
-
+    crate::log_error!("EXCEPTION: SIMD FLOATING-POINT");
     panic_with_stack_frame("SIMD FLOATING-POINT", stack_frame);
 }
 
 /// Helper function to panic with stack frame information
 ///
-/// This is a temporary solution until we have proper logging infrastructure.
+/// This function logs detailed stack frame information before panicking.
 #[inline(never)]
 fn panic_with_stack_frame(exception_name: &str, stack_frame: InterruptStackFrame) -> ! {
+    crate::log_error!("Stack Frame:");
+    crate::log_error!("  Instruction Pointer: {:#x}", stack_frame.instruction_pointer);
+    crate::log_error!("  Code Segment:        {:#x}", stack_frame.code_segment);
+    crate::log_error!("  CPU Flags:           {:#x}", stack_frame.cpu_flags);
+    crate::log_error!("  Stack Pointer:       {:#x}", stack_frame.stack_pointer);
+    crate::log_error!("  Stack Segment:       {:#x}", stack_frame.stack_segment);
+
     // Prevent optimization from removing the stack_frame
     core::hint::black_box(&stack_frame);
-
-    // TODO: When printk is available, print detailed information:
-    // - Exception name
-    // - Instruction pointer
-    // - Code segment
-    // - CPU flags
-    // - Stack pointer
-    // - Stack segment
 
     panic!("EXCEPTION: {}", exception_name);
 }

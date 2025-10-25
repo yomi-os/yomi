@@ -139,7 +139,7 @@ impl fmt::Write for SerialPort {
 }
 
 /// Global serial port (COM1)
-static SERIAL1: Mutex<SerialPort> = Mutex::new(SerialPort::new(COM1));
+pub static SERIAL1: Mutex<SerialPort> = Mutex::new(SerialPort::new(COM1));
 
 /// Initialize serial port
 pub fn init() {
