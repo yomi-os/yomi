@@ -99,7 +99,12 @@ impl SerialPort {
     fn send(&mut self, byte: u8) {
         unsafe {
             // Wait until transmission buffer is empty
+            let mut timeout = 100000;
             while self.line_status.read() & LINE_STATUS_OUTPUT_EMPTY == 0 {
+                timeout -= 1;
+                if timeout == 0 {
+                    return; // Hardware failure: transmit buffer never emptied
+                }
                 core::hint::spin_loop();
             }
 
