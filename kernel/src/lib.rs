@@ -1,6 +1,9 @@
 #![no_std]
 #![feature(alloc_error_handler)]
 #![feature(abi_x86_interrupt)]
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::testing::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
 
@@ -12,6 +15,7 @@ pub mod interrupts;
 pub mod time;
 pub mod serial;
 pub mod io;
+pub mod testing;
 
 pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
 pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};
@@ -80,9 +84,28 @@ pub extern "C" fn kernel_main(_multiboot_magic: u32, _multiboot_info: usize) -> 
 
 /// Kernel initialization function
 pub fn init() {
-    // Kernel initialization code will go here
+    serial::init();
+    memory::init_heap();
+    interrupts::init();
 }
 
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init();
+    test_main();
+    loop {
+        unsafe { core::arch::asm!("hlt") }
+    }
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    testing::test_panic_handler(info)
+}
+
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log_fatal!("KERNEL PANIC: {}", info);
