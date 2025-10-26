@@ -1,0 +1,106 @@
+# Clippy configuration for Yomi OS
+# Security-focused general-purpose OS (Kali Linux alternative)
+# Enforces safety and quality standards for kernel development
+
+# API stability
+avoid-breaking-exported-api = true
+
+# Documentation requirements
+doc-valid-idents = [
+    # Security and cryptography
+    "QEMU", "VPN", "TLS", "SSL", "AES", "RSA", "SHA", "HMAC", "PKI", "CA",
+    # Networking
+    "TCP", "UDP", "IP", "ICMP", "DNS", "DHCP", "HTTP", "HTTPS",
+    # System architecture
+    "OS", "CPU", "MMU", "MPU", "FPU", "APIC", "IOAPIC", "MSR",
+    # Storage and filesystem
+    "VFS", "EXT4", "NTFS", "FAT32", "UUID", "GUID", "GPT", "MBR",
+    # Hardware interfaces
+    "PCI", "PCIe", "USB", "SATA", "AHCI", "NVMe", "ACPI",
+    # Memory and resources
+    "RAM", "DRAM", "DMA", "IOMMU",
+    # Security tools (Kali Linux related)
+    "IDS", "IPS", "SIEM", "CVE", "CVSS", "XSS", "CSRF", "SQLi",
+]
+
+# Complexity limits (more relaxed for general-purpose OS)
+cognitive-complexity-threshold = 50
+type-complexity-threshold = 500
+too-many-arguments-threshold = 8
+too-many-lines-threshold = 300
+too-large-for-stack = 1024
+
+# Naming conventions
+enum-variant-name-threshold = 3
+max-struct-bools = 4
+max-fn-params-bools = 4
+
+# Memory safety configurations (x86_64 general-purpose OS)
+trivial-copy-size-limit = 256      # Larger than embedded
+pass-by-value-size-limit = 512     # x86_64 has more registers
+stack-size-threshold = 1048576     # 1MB - prevent stack overflow
+
+# String and text handling
+max-suggested-slice-pattern-length = 3
+literal-representation-threshold = 10
+
+# Naming patterns
+single-char-binding-names-threshold = 1
+disallowed-names = ["foo", "bar", "baz", "TODO", "FIXME"]
+
+# Standard library usage (no_std kernel)
+disallowed-methods = [
+    # Prevent accidental std usage in kernel space
+    "std::thread::sleep",
+    "std::process::exit",
+    "std::env::var",
+    "std::fs::read",
+    "std::fs::write",
+]
+
+disallowed-types = [
+    # Standard library types not available in no_std
+    "std::vec::Vec",
+    "std::collections::HashMap",
+    "std::collections::BTreeMap",
+    "std::thread::Thread",
+    "std::sync::Mutex",
+    "std::time::Instant",
+    "std::time::SystemTime",
+]
+
+# International support (for security research documentation)
+allowed-scripts = ["Latin", "Cyrillic", "Arabic", "Chinese", "Japanese"]
+
+# Minimum supported Rust version
+msrv = "1.88.0"
+
+# Kernel-specific identifier conventions
+upper-case-acronyms-aggressive = true
+
+# Common abbreviations in OS and security development
+allowed-prefixes = [
+    # Core OS components
+    "OS", "API", "IPC", "RPC", "VFS", "PID", "UID", "GID",
+    # Hardware
+    "CPU", "MMU", "MPU", "FPU", "IRQ", "DMA", "IOMMU",
+    "PCI", "PCIe", "USB", "SATA", "AHCI", "NVMe", "ACPI", "APIC", "IOAPIC",
+    "RAM", "DRAM", "ROM", "BIOS", "UEFI", "GPT", "MBR",
+    # Networking
+    "TCP", "UDP", "IP", "ICMP", "DNS", "DHCP", "ARP", "NAT", "VPN",
+    "HTTP", "HTTPS", "TLS", "SSL", "SSH", "FTP", "SFTP",
+    # Security and cryptography
+    "AES", "RSA", "SHA", "MD5", "HMAC", "PKI", "CA", "CRL", "OCSP",
+    "XSS", "CSRF", "SQLi", "RCE", "LFI", "RFI", "XXE",
+    # Security tools (Kali Linux ecosystem)
+    "IDS", "IPS", "SIEM", "WAF", "DLP", "CVE", "CVSS", "CWE",
+    "OWASP", "NIST", "MITM", "DoS", "DDoS",
+    # Forensics and analysis
+    "PCAP", "RAM", "Dump", "Hex", "ELF", "PE", "YARA",
+]
+
+# Error handling patterns
+large-error-threshold = 256  # Larger for general-purpose OS
+
+# Allowed wildcard imports for common modules
+allowed-wildcard-imports = []
