@@ -24,7 +24,8 @@ impl Multiboot2Info {
         if magic != MULTIBOOT2_MAGIC {
             return None;
         }
-        // Multiboot2 info structures are 8-byte aligned; reject null/misaligned pointers early.
+        // Multiboot2 info structures are 8-byte aligned; reject null/misaligned
+        // pointers early.
         if info_addr == 0 || (info_addr & 0x7) != 0 {
             return None;
         }
