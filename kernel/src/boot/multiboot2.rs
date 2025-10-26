@@ -1,7 +1,9 @@
-/// Multiboot2 information handling
-///
-/// This module provides types and functions for extracting information
-/// passed by the bootloader (GRUB2) via Multiboot2 protocol.
+//! Multiboot2 information handling
+//!
+//! This module provides types and functions for extracting information
+//! passed by the bootloader (GRUB2) via Multiboot2 protocol.
+
+#![allow(dead_code)]
 
 /// Multiboot2 magic number (passed in EAX by bootloader)
 pub const MULTIBOOT2_MAGIC: u32 = 0x36d76289;
@@ -9,6 +11,7 @@ pub const MULTIBOOT2_MAGIC: u32 = 0x36d76289;
 /// Multiboot2 information structure
 pub struct Multiboot2Info {
     /// Address of boot information structure passed by bootloader
+    #[allow(dead_code)]
     info_addr: usize,
 }
 

@@ -15,8 +15,15 @@
 //! log_error!("Page fault at {:#x}", faulting_addr);
 //! ```
 
-use core::fmt;
-use core::sync::atomic::{AtomicU8, Ordering};
+#![allow(dead_code)]
+
+use core::{
+    fmt,
+    sync::atomic::{
+        AtomicU8,
+        Ordering,
+    },
+};
 
 /// Log level enumeration
 ///
@@ -24,6 +31,7 @@ use core::sync::atomic::{AtomicU8, Ordering};
 /// DEBUG < INFO < WARN < ERROR < FATAL
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(u8)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum LogLevel {
     /// Detailed debug information
     DEBUG = 0,
@@ -73,7 +81,10 @@ static LOG_LEVEL: AtomicU8 = AtomicU8::new(LogLevel::DEBUG as u8);
 /// # Examples
 ///
 /// ```
-/// use kernel::io::logging::{LogLevel, set_log_level};
+/// use kernel::io::logging::{
+///     LogLevel,
+///     set_log_level,
+/// };
 ///
 /// // Only show INFO and above
 /// set_log_level(LogLevel::INFO);
@@ -115,7 +126,10 @@ pub fn get_log_level() -> LogLevel {
 /// # Examples
 ///
 /// ```
-/// use kernel::io::logging::{LogLevel, log};
+/// use kernel::io::logging::{
+///     LogLevel,
+///     log,
+/// };
 ///
 /// log(LogLevel::INFO, format_args!("System initialized"));
 /// log(LogLevel::ERROR, format_args!("Error code: {}", error_code));

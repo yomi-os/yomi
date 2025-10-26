@@ -55,8 +55,7 @@ pub trait Testable {
 }
 
 impl<T> Testable for T
-where
-    T: Fn(),
+where T: Fn()
 {
     fn run(&self) {
         crate::serial_print!("{}...\t", core::any::type_name::<T>());

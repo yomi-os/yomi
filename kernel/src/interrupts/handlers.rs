@@ -1,6 +1,7 @@
 //! Exception and interrupt handlers
 //!
-//! This module contains handler functions for CPU exceptions and hardware interrupts.
+//! This module contains handler functions for CPU exceptions and hardware
+//! interrupts.
 
 use super::idt::InterruptStackFrame;
 
@@ -77,8 +78,8 @@ pub extern "x86-interrupt" fn device_not_available_handler(stack_frame: Interrup
 
 /// Double Fault (#DF, 8) - Abort
 ///
-/// Occurs when an exception occurs while trying to call the handler for a prior exception.
-/// This is a critical error that requires special handling.
+/// Occurs when an exception occurs while trying to call the handler for a prior
+/// exception. This is a critical error that requires special handling.
 ///
 /// Note: This handler never returns.
 pub extern "x86-interrupt" fn double_fault_handler(

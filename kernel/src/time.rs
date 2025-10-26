@@ -17,6 +17,8 @@
 //! This module provides time-related functionality including
 //! system uptime, timestamps, and time utilities.
 
+#![allow(dead_code)]
+
 use crate::interrupts::timer;
 
 /// Returns the current tick count

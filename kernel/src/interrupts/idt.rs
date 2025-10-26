@@ -40,6 +40,7 @@ pub struct InterruptDescriptorTable {
 
 impl InterruptDescriptorTable {
     /// Creates a new IDT with all entries marked as missing
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             divide_error: Entry::missing(),
@@ -87,7 +88,8 @@ impl InterruptDescriptorTable {
         }
     }
 
-    /// Returns a mutable reference to the interrupt entry at the specified index
+    /// Returns a mutable reference to the interrupt entry at the specified
+    /// index
     ///
     /// # Arguments
     ///
@@ -258,6 +260,7 @@ impl EntryOptions {
     ///
     /// 0 = Kernel
     /// 3 = User
+    #[allow(dead_code)]
     pub fn set_privilege_level(&mut self, dpl: u16) -> &mut Self {
         self.0 &= !(0b11 << 13); // Clear DPL bits
         self.0 |= (dpl & 0b11) << 13; // Set new DPL

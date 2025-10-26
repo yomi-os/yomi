@@ -1,6 +1,7 @@
 //! I/O Port access utilities
 //!
-//! This module provides safe wrappers for x86-64 I/O port instructions (in/out).
+//! This module provides safe wrappers for x86-64 I/O port instructions
+//! (in/out).
 
 use core::marker::PhantomData;
 

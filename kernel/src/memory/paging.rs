@@ -1,5 +1,13 @@
-use super::address::{Page, PhysAddr, PhysFrame, VirtAddr};
+#![allow(dead_code)]
+
 use bitflags::bitflags;
+
+use super::address::{
+    Page,
+    PhysAddr,
+    PhysFrame,
+    VirtAddr,
+};
 
 bitflags! {
     /// Page table entry flags
@@ -37,6 +45,7 @@ pub struct PageTableEntry {
 
 impl PageTableEntry {
     /// Create a new empty page table entry
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self { entry: 0 }
     }
@@ -55,7 +64,7 @@ impl PageTableEntry {
     pub fn frame(&self) -> Option<PhysFrame> {
         if self.flags().contains(PageTableFlags::PRESENT) {
             // Extract the physical address (bits 12-51)
-            let addr = self.entry & 0x000F_FFFF_FFFF_F000;
+            let addr = self.entry & 0x000f_ffff_ffff_f000;
             Some(PhysFrame::containing_address(PhysAddr::new(addr)))
         } else {
             None
@@ -77,7 +86,7 @@ impl PageTableEntry {
     /// Set flags for this entry
     pub fn set_flags(&mut self, flags: PageTableFlags) {
         // Preserve the address bits, update only the flags
-        let addr = self.entry & 0x000F_FFFF_FFFF_F000;
+        let addr = self.entry & 0x000f_ffff_ffff_f000;
         self.entry = addr | flags.bits();
     }
 }
@@ -100,6 +109,7 @@ pub struct PageTable {
 
 impl PageTable {
     /// Create a new page table with all entries set to unused
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             entries: [PageTableEntry::new(); 512],
@@ -155,14 +165,14 @@ impl PageTableManager {
     /// Get the current page table from CR3
     ///
     /// # Safety
-    /// This function is unsafe because it reads from CR3 and creates a mutable reference
-    /// to the page table at that address.
+    /// This function is unsafe because it reads from CR3 and creates a mutable
+    /// reference to the page table at that address.
     pub unsafe fn current() -> Self {
         let cr3: u64;
         core::arch::asm!("mov {}, cr3", out(reg) cr3);
 
         // Extract the page table address (bits 12-51)
-        let p4_table_addr = cr3 & 0x000F_FFFF_FFFF_F000;
+        let p4_table_addr = cr3 & 0x000f_ffff_ffff_f000;
         let p4_table = &mut *(p4_table_addr as *mut PageTable);
 
         Self { p4_table }
@@ -171,7 +181,8 @@ impl PageTableManager {
     /// Create a PageTableManager from a given P4 table
     ///
     /// # Safety
-    /// The caller must ensure that the P4 table is valid and properly initialized.
+    /// The caller must ensure that the P4 table is valid and properly
+    /// initialized.
     pub unsafe fn from_p4_table(p4_table: &'static mut PageTable) -> Self {
         Self { p4_table }
     }

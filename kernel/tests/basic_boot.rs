@@ -12,7 +12,11 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
-use yomi_kernel::{serial_print, serial_println};
+
+use yomi_kernel::{
+    serial_print,
+    serial_println,
+};
 
 /// Entry point for basic boot test
 #[no_mangle]

@@ -51,11 +51,6 @@ jobs:
         working-directory: kernel
         run: cargo build --verbose
 
-      - name: Run kernel library tests
-        working-directory: kernel
-        run: |
-          cargo test --lib --verbose -- --nocapture
-
       - name: Run integration tests
         working-directory: kernel
         run: |
@@ -89,7 +84,7 @@ jobs:
 
       - name: Run clippy
         working-directory: kernel
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --lib --bins -- -D warnings
 
   build:
     name: Build

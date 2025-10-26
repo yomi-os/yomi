@@ -42,8 +42,8 @@ const IRQ_OFFSET: usize = 32;
 
 /// Initializes the Interrupt Descriptor Table
 ///
-/// This function sets up the GDT, TSS with IST stacks, and all exception handlers.
-/// It should be called early in the kernel initialization process.
+/// This function sets up the GDT, TSS with IST stacks, and all exception
+/// handlers. It should be called early in the kernel initialization process.
 ///
 /// # Panics
 ///
@@ -77,7 +77,8 @@ pub fn init() {
             .set_handler_fn(handlers::device_not_available_handler);
 
         // Double Fault handler (diverging)
-        // Use IST index 1 for dedicated stack to prevent triple-fault on stack corruption
+        // Use IST index 1 for dedicated stack to prevent triple-fault on stack
+        // corruption
         idt.double_fault
             .set_handler_fn_diverging_with_error_code(handlers::double_fault_handler)
             .set_ist(1);
@@ -106,7 +107,7 @@ pub fn init() {
 
         // Hardware interrupt handlers (IRQs)
         // Timer (IRQ 0 → vector 32)
-        idt.get_interrupt_entry_mut(IRQ_OFFSET + 0)
+        idt.get_interrupt_entry_mut(IRQ_OFFSET)
             .set_handler_fn(timer::timer_interrupt_handler);
 
         idt
@@ -210,9 +211,7 @@ pub fn are_enabled() -> bool {
 /// });
 /// ```
 pub fn without_interrupts<F, R>(f: F) -> R
-where
-    F: FnOnce() -> R,
-{
+where F: FnOnce() -> R {
     let enabled = are_enabled();
 
     if enabled {
@@ -231,4 +230,3 @@ where
 
     result
 }
-

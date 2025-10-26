@@ -31,14 +31,27 @@ pub mod serial;
 pub mod testing;
 pub mod time;
 
-pub use boot::{MemoryRegion, MemoryRegionType, Multiboot2Info};
-pub use memory::{
-    Page, PageTable, PageTableEntry, PageTableFlags, PageTableManager, PhysAddr, PhysFrame,
-    VirtAddr,
+use alloc::{
+    boxed::Box,
+    vec,
 };
 
-use alloc::{boxed::Box, vec};
+pub use boot::{
+    MemoryRegion,
+    MemoryRegionType,
+    Multiboot2Info,
+};
 use interrupts::timer;
+pub use memory::{
+    Page,
+    PageTable,
+    PageTableEntry,
+    PageTableFlags,
+    PageTableManager,
+    PhysAddr,
+    PhysFrame,
+    VirtAddr,
+};
 
 /// Kernel main entry point called from boot64.asm
 #[no_mangle]

@@ -17,6 +17,18 @@ pub mod allocator;
 pub mod heap;
 pub mod paging;
 
-pub use address::{Page, PhysAddr, PhysFrame, VirtAddr};
+#[allow(unused_imports)]
+pub use address::{
+    Page,
+    PhysAddr,
+    PhysFrame,
+    VirtAddr,
+};
 pub use heap::init_heap;
-pub use paging::{PageTable, PageTableEntry, PageTableFlags, PageTableManager};
+#[allow(unused_imports)]
+pub use paging::{
+    PageTable,
+    PageTableEntry,
+    PageTableFlags,
+    PageTableManager,
+};

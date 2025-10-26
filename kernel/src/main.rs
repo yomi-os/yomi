@@ -28,7 +28,11 @@ mod memory;
 mod serial;
 mod time;
 
-use alloc::{boxed::Box, vec};
+use alloc::{
+    boxed::Box,
+    vec,
+};
+
 use interrupts::timer;
 
 /// Kernel entry point called from boot.asm

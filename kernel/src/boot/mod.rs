@@ -18,4 +18,9 @@
 /// early initialization code.
 pub mod multiboot2;
 
-pub use multiboot2::{MemoryRegion, MemoryRegionType, Multiboot2Info};
+#[allow(unused_imports)]
+pub use multiboot2::{
+    MemoryRegion,
+    MemoryRegionType,
+    Multiboot2Info,
+};

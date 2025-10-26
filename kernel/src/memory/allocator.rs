@@ -4,17 +4,26 @@
 //! The Bump Allocator is a linear allocator that allocates memory by bumping
 //! a pointer forward. It's simple but cannot reuse freed memory.
 //!
-//! This will be replaced with more advanced allocators (Slab, Buddy) in the future.
+//! This will be replaced with more advanced allocators (Slab, Buddy) in the
+//! future.
 
-use core::alloc::{GlobalAlloc, Layout};
-use core::ptr;
+#![allow(dead_code)]
+
+use core::{
+    alloc::{
+        GlobalAlloc,
+        Layout,
+    },
+    ptr,
+};
+
 use spin::Mutex;
 
 /// Bump Allocator (linear allocator)
 ///
-/// Allocates memory by moving a pointer forward. Very simple but cannot reuse memory.
-/// Suitable for initial implementation and will be replaced with more sophisticated
-/// allocators later.
+/// Allocates memory by moving a pointer forward. Very simple but cannot reuse
+/// memory. Suitable for initial implementation and will be replaced with more
+/// sophisticated allocators later.
 pub struct BumpAllocator {
     heap_start: usize,
     heap_end: usize,
@@ -24,6 +33,7 @@ pub struct BumpAllocator {
 
 impl BumpAllocator {
     /// Create a new BumpAllocator
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             heap_start: 0,

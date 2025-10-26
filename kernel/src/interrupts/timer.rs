@@ -3,9 +3,17 @@
 //! This module handles the timer interrupt (IRQ 0) from the PIT.
 //! The timer is used to generate periodic scheduler ticks.
 
-use super::idt::InterruptStackFrame;
-use super::pic::PICS;
-use core::sync::atomic::{AtomicU64, Ordering};
+#![allow(dead_code)]
+
+use core::sync::atomic::{
+    AtomicU64,
+    Ordering,
+};
+
+use super::{
+    idt::InterruptStackFrame,
+    pic::PICS,
+};
 
 /// Timer tick counter
 ///
