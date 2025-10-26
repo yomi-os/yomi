@@ -171,7 +171,7 @@ pub fn _print(args: fmt::Arguments) {
     SERIAL1
         .lock()
         .write_fmt(args)
-        .expect("Printing to serial failed");
+        .ok(); // Silently ignore failures to prevent double-panic in panic handler
 }
 
 /// Serial output macro
