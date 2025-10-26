@@ -33,18 +33,21 @@ impl Multiboot2Info {
     }
 
     /// Get memory map iterator
+    #[allow(dead_code)]
     pub fn memory_map(&self) -> impl Iterator<Item = MemoryRegion> {
         // TODO: Parse Multiboot2 information to extract memory map
         core::iter::empty()
     }
 
     /// Get framebuffer information
+    #[allow(dead_code)]
     pub fn framebuffer_info(&self) -> Option<FramebufferInfo> {
         // TODO: Parse Multiboot2 information to extract framebuffer info
         None
     }
 
     /// Get total memory size
+    #[allow(dead_code)]
     pub fn total_memory(&self) -> Option<usize> {
         // TODO: Parse Multiboot2 information to extract memory info
         None
@@ -53,6 +56,7 @@ impl Multiboot2Info {
 
 /// Memory region descriptor
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub struct MemoryRegion {
     /// Base physical address of the region
     pub base_addr: u64,
@@ -65,6 +69,7 @@ pub struct MemoryRegion {
 /// Memory region type
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
+#[allow(dead_code)]
 pub enum MemoryRegionType {
     /// Usable RAM
     Usable = 1,
@@ -80,6 +85,7 @@ pub enum MemoryRegionType {
 
 /// Framebuffer information
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub struct FramebufferInfo {
     /// Physical address of framebuffer
     pub addr: u64,
@@ -98,6 +104,7 @@ pub struct FramebufferInfo {
 /// Framebuffer type
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+#[allow(dead_code)]
 pub enum FramebufferType {
     /// Indexed color
     Indexed = 0,

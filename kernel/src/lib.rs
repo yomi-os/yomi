@@ -31,17 +31,11 @@ pub mod serial;
 pub mod testing;
 pub mod time;
 
-use alloc::{
-    boxed::Box,
-    vec,
-};
-
 pub use boot::{
     MemoryRegion,
     MemoryRegionType,
     Multiboot2Info,
 };
-use interrupts::timer;
 pub use memory::{
     Page,
     PageTable,
