@@ -27,6 +27,7 @@ pub mod boot;
 pub mod interrupts;
 pub mod io;
 pub mod memory;
+pub mod panic;
 pub mod serial;
 pub mod testing;
 pub mod time;
@@ -73,9 +74,5 @@ fn panic(info: &PanicInfo) -> ! {
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    log_fatal!("KERNEL PANIC: {}", info);
-
-    loop {
-        unsafe { core::arch::asm!("hlt") }
-    }
+    crate::panic::panic_handler(info)
 }

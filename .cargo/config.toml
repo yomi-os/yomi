@@ -12,6 +12,7 @@ rustflags = [
     "-C", "link-arg=--no-dynamic-linker",
     "-C", "link-arg=-Tkernel/linker.ld",
     "-C", "relocation-model=static",
+    "-C", "force-frame-pointers=yes",
 ]
 
 # Test runner configuration
