@@ -24,6 +24,7 @@
 //! as much context as possible about the system state at the time of panic.
 
 use core::panic::PanicInfo;
+
 use crate::println;
 
 /// Main panic handler implementation
@@ -99,10 +100,7 @@ fn print_uptime() {
     let minutes = (total_secs % 3600) / 60;
     let seconds = total_secs % 60;
 
-    println!(
-        "Uptime: {}h {}m {}s {}ms",
-        hours, minutes, seconds, ms
-    );
+    println!("Uptime: {}h {}m {}s {}ms", hours, minutes, seconds, ms);
 }
 
 /// Print stack trace by walking the RBP chain
@@ -175,7 +173,7 @@ fn print_stack_trace() {
 fn is_valid_kernel_address(addr: u64) -> bool {
     // Kernel space: 0xFFFF800000000000 and above
     // Also check it's not null and not too high
-    addr >= 0xFFFF_8000_0000_0000 && addr < 0xFFFF_FFFF_FFFF_FFFF
+    addr >= 0xffff_8000_0000_0000 && addr < 0xffff_ffff_ffff_ffff
 }
 
 /// Print CPU register dump
