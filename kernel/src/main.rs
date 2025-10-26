@@ -25,6 +25,7 @@ mod boot;
 mod interrupts;
 mod io;
 mod memory;
+mod panic;
 mod serial;
 mod time;
 
@@ -115,11 +116,5 @@ pub extern "C" fn kernel_main(magic: u32, info_addr: usize) -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    crate::log_fatal!("KERNEL PANIC: {}", info);
-
-    loop {
-        unsafe {
-            core::arch::asm!("hlt");
-        }
-    }
+    crate::panic::panic_handler(info)
 }
