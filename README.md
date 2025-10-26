@@ -32,6 +32,27 @@ cargo xtask run
 - **eBPF Drivers**: Statically verified safe driver framework
 - **Security Tool Integration**: OS-level security APIs
 
+## 🐛 Debugging
+
+Debug the kernel with GDB:
+
+```bash
+# Build kernel and ISO (if not already built)
+cargo build --package yomi-kernel
+./scripts/build-iso.sh
+
+# Quick start debugging
+./scripts/debug.sh
+
+# Or manually start QEMU in debug mode
+./scripts/run-qemu.sh debug
+
+# Then connect with GDB (in another terminal)
+rust-gdb target/x86_64-unknown-none/debug/yomi-kernel
+```
+
+For detailed debugging instructions, see the [Debugging Guide](docs/debugging-guide.md).
+
 ## 🤝 Contributing
 
 Contributions are welcome! For details, please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
