@@ -168,10 +168,7 @@ pub fn init() {
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
 
-    SERIAL1
-        .lock()
-        .write_fmt(args)
-        .ok(); // Silently ignore failures to prevent double-panic in panic handler
+    SERIAL1.lock().write_fmt(args).ok(); // Silently ignore failures to prevent double-panic in panic handler
 }
 
 /// Serial output macro
