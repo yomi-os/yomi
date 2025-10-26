@@ -63,11 +63,42 @@ impl SerialPort {
         }
     }
 
-    /// Initialize serial port
+    /// Initialize serial port with retry logic
+    ///
+    /// This function attempts to initialize the serial port up to `max_retries` times.
+    /// It includes proper reset sequences and delays to handle timing issues with
+    /// serial hardware or emulators like QEMU.
     pub fn init(&mut self) {
+        const MAX_RETRIES: u32 = 3;
+
+        for _attempt in 0..MAX_RETRIES {
+            if self.try_init() {
+                return; // Initialization successful
+            }
+
+            // Add delay between retries
+            for _ in 0..10000 {
+                core::hint::spin_loop();
+            }
+        }
+
+        // All retries failed - serial port is not functional
+        // Continue anyway, but output will be lost
+    }
+
+    /// Attempt to initialize the serial port once
+    ///
+    /// Returns true if initialization was successful, false otherwise.
+    fn try_init(&mut self) -> bool {
         unsafe {
-            // Disable interrupts
+            // Reset sequence: Disable all interrupts and FIFO first
             self.int_enable.write(0x00);
+            self.fifo_ctrl.write(0x00);
+
+            // Small delay to let hardware settle
+            for _ in 0..1000 {
+                core::hint::spin_loop();
+            }
 
             // Enable baud rate configuration (DLAB = 1)
             self.line_ctrl.write(0x80);
@@ -79,11 +110,16 @@ impl SerialPort {
             // 8 bits, no parity, 1 stop bit (DLAB = 0)
             self.line_ctrl.write(0x03);
 
-            // Enable FIFO, 14-byte threshold
+            // Enable FIFO, clear both FIFOs, 14-byte threshold
             self.fifo_ctrl.write(0xc7);
 
-            // Data Terminal Ready, Request To Send, Output 2
+            // Data Terminal Ready, Request To Send, Output 2 (enables interrupts)
             self.modem_ctrl.write(0x0b);
+
+            // Another small delay after configuration
+            for _ in 0..1000 {
+                core::hint::spin_loop();
+            }
 
             // Test: Set to loopback mode
             self.modem_ctrl.write(0x1e);
@@ -96,20 +132,31 @@ impl SerialPort {
             while self.line_status.read() & LINE_STATUS_DATA_READY == 0 {
                 timeout -= 1;
                 if timeout == 0 {
-                    // Timeout: Serial port is faulty
-                    return;
+                    // Timeout: Serial port test failed
+                    // Reset to normal mode anyway
+                    self.modem_ctrl.write(0x0f);
+                    return false;
                 }
                 core::hint::spin_loop();
             }
 
             // Check if same byte can be received
             if self.data.read() != 0xae {
-                // Serial port is faulty
-                return;
+                // Serial port test failed
+                // Reset to normal mode anyway
+                self.modem_ctrl.write(0x0f);
+                return false;
             }
 
             // Exit loopback mode, return to normal operation
             self.modem_ctrl.write(0x0f);
+
+            // Final delay to ensure port is ready
+            for _ in 0..1000 {
+                core::hint::spin_loop();
+            }
+
+            true // Initialization successful
         }
     }
 
