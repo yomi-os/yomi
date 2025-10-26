@@ -132,7 +132,7 @@ impl Entry {
     ///
     /// The handler will be called when this interrupt/exception occurs.
     pub fn set_handler_fn(&mut self, handler: HandlerFunc) -> &mut EntryOptions {
-        let addr = handler as u64;
+        let addr = handler as usize as u64;
 
         self.pointer_low = addr as u16;
         self.pointer_middle = (addr >> 16) as u16;
@@ -152,7 +152,7 @@ impl Entry {
         &mut self,
         handler: HandlerFuncWithErrorCode,
     ) -> &mut EntryOptions {
-        let addr = handler as u64;
+        let addr = handler as usize as u64;
 
         self.pointer_low = addr as u16;
         self.pointer_middle = (addr >> 16) as u16;
@@ -168,7 +168,7 @@ impl Entry {
     ///
     /// Used for handlers that never return (like Double Fault).
     pub fn set_handler_fn_diverging(&mut self, handler: DivergingHandlerFunc) -> &mut EntryOptions {
-        let addr = handler as u64;
+        let addr = handler as usize as u64;
 
         self.pointer_low = addr as u16;
         self.pointer_middle = (addr >> 16) as u16;
@@ -185,7 +185,7 @@ impl Entry {
         &mut self,
         handler: DivergingHandlerFuncWithErrorCode,
     ) -> &mut EntryOptions {
-        let addr = handler as u64;
+        let addr = handler as usize as u64;
 
         self.pointer_low = addr as u16;
         self.pointer_middle = (addr >> 16) as u16;
@@ -258,7 +258,6 @@ impl EntryOptions {
     ///
     /// 0 = Kernel
     /// 3 = User
-    #[allow(dead_code)]
     pub fn set_privilege_level(&mut self, dpl: u16) -> &mut Self {
         self.0 &= !(0b11 << 13); // Clear DPL bits
         self.0 |= (dpl & 0b11) << 13; // Set new DPL

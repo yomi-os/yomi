@@ -57,7 +57,7 @@ impl Pit {
 
         // Ensure divisor fits in u16 and meets mode 3 requirements
         assert!(
-            divisor >= 2 && divisor <= 65535,
+            (2..=65535).contains(&divisor),
             "PIT divisor {} out of range (2-65535); frequency {} Hz is invalid",
             divisor,
             frequency

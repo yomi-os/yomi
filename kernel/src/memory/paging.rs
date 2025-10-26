@@ -213,7 +213,7 @@ impl PageTableManager {
     /// Unmap a page
     pub fn unmap_page(&mut self, page: Page) -> Result<PhysFrame, &'static str> {
         // Traverse the page table hierarchy
-        let p4 = unsafe { &*self.p4_table };
+        let p4 = &*self.p4_table;
         let p3 = Self::next_table_ptr(p4, page.p4_index()).ok_or("P3 table not present")?;
         let p3 = unsafe { &*p3 };
         let p2 = Self::next_table_ptr(p3, page.p3_index()).ok_or("P2 table not present")?;
@@ -243,7 +243,7 @@ impl PageTableManager {
     /// Translate a virtual address to a physical address
     pub fn translate_addr(&self, addr: VirtAddr) -> Option<PhysAddr> {
         // Traverse the page table hierarchy
-        let p4 = unsafe { &*self.p4_table };
+        let p4 = &*self.p4_table;
         let p3 = Self::next_table_ptr(p4, addr.p4_index())?;
         let p3 = unsafe { &*p3 };
         let p2 = Self::next_table_ptr(p3, addr.p3_index())?;

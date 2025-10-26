@@ -1,3 +1,6 @@
+// Build script runs on host, not in kernel - std library is required
+#![allow(clippy::disallowed_methods, clippy::disallowed_types)]
+
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
