@@ -1,7 +1,8 @@
 //! PIT (Programmable Interval Timer) implementation
 //!
-//! The 8253/8254 PIT is a legacy timer chip used to generate periodic interrupts.
-//! This module provides initialization and configuration for timer interrupts.
+//! The 8253/8254 PIT is a legacy timer chip used to generate periodic
+//! interrupts. This module provides initialization and configuration for timer
+//! interrupts.
 
 use super::port::Port;
 
@@ -31,11 +32,13 @@ impl Pit {
 
     /// Sets the timer frequency
     ///
-    /// This configures Channel 0 to generate interrupts at the specified frequency.
+    /// This configures Channel 0 to generate interrupts at the specified
+    /// frequency.
     ///
     /// # Arguments
     ///
-    /// * `frequency` - Desired timer frequency in Hz (e.g., 100 Hz = 10ms interval)
+    /// * `frequency` - Desired timer frequency in Hz (e.g., 100 Hz = 10ms
+    ///   interval)
     ///
     /// # Example
     ///
@@ -57,7 +60,7 @@ impl Pit {
 
         // Ensure divisor fits in u16 and meets mode 3 requirements
         assert!(
-            divisor >= 2 && divisor <= 65535,
+            (2..=65535).contains(&divisor),
             "PIT divisor {} out of range (2-65535); frequency {} Hz is invalid",
             divisor,
             frequency
@@ -65,13 +68,13 @@ impl Pit {
 
         unsafe {
             // Channel 0, Mode 3 (square wave generator), 16-bit binary
-            // Command byte: 00 (Channel 0) | 11 (access mode: lobyte/hibyte) | 011 (mode 3) | 0 (binary)
-            // = 0x36 (00110110)
+            // Command byte: 00 (Channel 0) | 11 (access mode: lobyte/hibyte) | 011 (mode 3)
+            // | 0 (binary) = 0x36 (00110110)
             self.command.write(0x36);
 
             // Send divisor (low byte, then high byte)
             let divisor = divisor as u16;
-            self.channel_0.write((divisor & 0xFF) as u8);
+            self.channel_0.write((divisor & 0xff) as u8);
             self.channel_0.write((divisor >> 8) as u8);
         }
     }

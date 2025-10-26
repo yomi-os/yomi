@@ -3,7 +3,10 @@
 //! This module provides heap initialization functionality for the kernel.
 //! It sets up a global allocator using the BumpAllocator implementation.
 
-use super::allocator::{BumpAllocator, Locked};
+use super::allocator::{
+    BumpAllocator,
+    Locked,
+};
 
 /// Heap size (100 KB)
 ///
@@ -40,14 +43,18 @@ pub fn init_heap() {
         ALLOCATOR.lock().init(heap_start, HEAP_SIZE);
     }
 
-    crate::log_debug!("Heap initialized: start = {:#x}, size = {} KB",
-                      core::ptr::addr_of!(HEAP) as usize, HEAP_SIZE / 1024);
+    crate::log_debug!(
+        "Heap initialized: start = {:#x}, size = {} KB",
+        core::ptr::addr_of!(HEAP) as usize,
+        HEAP_SIZE / 1024
+    );
 }
 
 /// Get current heap usage statistics
 ///
 /// Returns information about heap usage including total size, used size,
 /// and number of active allocations.
+#[allow(dead_code)]
 pub fn heap_usage() -> super::allocator::HeapUsage {
     ALLOCATOR.lock().usage()
 }

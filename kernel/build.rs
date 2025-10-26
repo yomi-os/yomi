@@ -1,6 +1,11 @@
-use std::env;
-use std::path::PathBuf;
-use std::process::Command;
+// Build script runs on host, not in kernel - std library is required
+#![allow(clippy::disallowed_methods, clippy::disallowed_types)]
+
+use std::{
+    env,
+    path::PathBuf,
+    process::Command,
+};
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -23,8 +28,10 @@ fn main() {
 
         let status = Command::new("nasm")
             .args([
-                "-f", "elf64",
-                "-o", obj_file.to_str().unwrap(),
+                "-f",
+                "elf64",
+                "-o",
+                obj_file.to_str().unwrap(),
                 asm_file.to_str().unwrap(),
             ])
             .status()

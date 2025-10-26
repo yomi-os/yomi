@@ -28,6 +28,7 @@ pub struct TaskStateSegment {
 
 impl TaskStateSegment {
     /// Creates a new TSS with all fields zeroed
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             reserved_1: 0,
@@ -82,7 +83,8 @@ pub fn init() {
 ///
 /// # Safety
 ///
-/// This function is unsafe because it returns a reference to a static mutable variable.
+/// This function is unsafe because it returns a reference to a static mutable
+/// variable.
 pub unsafe fn get_tss() -> &'static TaskStateSegment {
     &*core::ptr::addr_of!(TSS)
 }

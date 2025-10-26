@@ -1,6 +1,7 @@
 //! Exception and interrupt handlers
 //!
-//! This module contains handler functions for CPU exceptions and hardware interrupts.
+//! This module contains handler functions for CPU exceptions and hardware
+//! interrupts.
 
 use super::idt::InterruptStackFrame;
 
@@ -33,7 +34,10 @@ pub extern "x86-interrupt" fn non_maskable_interrupt_handler(stack_frame: Interr
 /// Occurs when an INT3 instruction is executed.
 /// This exception is commonly used by debuggers and should not panic.
 pub extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    crate::log_debug!("EXCEPTION: BREAKPOINT at RIP={:#x}", stack_frame.instruction_pointer);
+    crate::log_debug!(
+        "EXCEPTION: BREAKPOINT at RIP={:#x}",
+        stack_frame.instruction_pointer
+    );
 
     // Breakpoint is expected in debugging, so we don't panic
     // Just prevent optimization from removing the stack_frame
@@ -74,8 +78,8 @@ pub extern "x86-interrupt" fn device_not_available_handler(stack_frame: Interrup
 
 /// Double Fault (#DF, 8) - Abort
 ///
-/// Occurs when an exception occurs while trying to call the handler for a prior exception.
-/// This is a critical error that requires special handling.
+/// Occurs when an exception occurs while trying to call the handler for a prior
+/// exception. This is a critical error that requires special handling.
 ///
 /// Note: This handler never returns.
 pub extern "x86-interrupt" fn double_fault_handler(
@@ -112,7 +116,10 @@ pub extern "x86-interrupt" fn segment_not_present_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    crate::log_error!("EXCEPTION: SEGMENT NOT PRESENT (Error Code: {:#x})", error_code);
+    crate::log_error!(
+        "EXCEPTION: SEGMENT NOT PRESENT (Error Code: {:#x})",
+        error_code
+    );
     core::hint::black_box(error_code);
     panic_with_stack_frame("SEGMENT NOT PRESENT", stack_frame);
 }
@@ -124,7 +131,10 @@ pub extern "x86-interrupt" fn stack_segment_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    crate::log_error!("EXCEPTION: STACK-SEGMENT FAULT (Error Code: {:#x})", error_code);
+    crate::log_error!(
+        "EXCEPTION: STACK-SEGMENT FAULT (Error Code: {:#x})",
+        error_code
+    );
     core::hint::black_box(error_code);
     panic_with_stack_frame("STACK-SEGMENT FAULT", stack_frame);
 }
@@ -171,8 +181,14 @@ pub extern "x86-interrupt" fn page_fault_handler(
     let reserved = (error_code & 0x8) != 0;
     let instruction = (error_code & 0x10) != 0;
 
-    crate::log_error!("    Present: {}, Write: {}, User: {}, Reserved: {}, Instruction: {}",
-                     present, write, user, reserved, instruction);
+    crate::log_error!(
+        "    Present: {}, Write: {}, User: {}, Reserved: {}, Instruction: {}",
+        present,
+        write,
+        user,
+        reserved,
+        instruction
+    );
     crate::log_error!("  RIP: {:#x}", stack_frame.instruction_pointer);
 
     core::hint::black_box(fault_addr);
@@ -225,7 +241,10 @@ pub extern "x86-interrupt" fn simd_floating_point_handler(stack_frame: Interrupt
 #[inline(never)]
 fn panic_with_stack_frame(exception_name: &str, stack_frame: InterruptStackFrame) -> ! {
     crate::log_error!("Stack Frame:");
-    crate::log_error!("  Instruction Pointer: {:#x}", stack_frame.instruction_pointer);
+    crate::log_error!(
+        "  Instruction Pointer: {:#x}",
+        stack_frame.instruction_pointer
+    );
     crate::log_error!("  Code Segment:        {:#x}", stack_frame.code_segment);
     crate::log_error!("  CPU Flags:           {:#x}", stack_frame.cpu_flags);
     crate::log_error!("  Stack Pointer:       {:#x}", stack_frame.stack_pointer);

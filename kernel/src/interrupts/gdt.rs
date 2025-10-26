@@ -2,8 +2,9 @@
 //!
 //! The GDT defines memory segments and system descriptors including the TSS.
 
-use super::tss::TaskStateSegment;
 use core::mem;
+
+use super::tss::TaskStateSegment;
 
 /// GDT entry structure
 #[derive(Debug, Clone, Copy)]
@@ -49,8 +50,8 @@ impl GdtEntry {
             limit_low: 0,
             base_low: 0,
             base_middle: 0,
-            access: 0x9A, // Present, Ring 0, Code segment, Executable, Readable
-            granularity: 0xA0, // Long mode
+            access: 0x9a,      // Present, Ring 0, Code segment, Executable, Readable
+            granularity: 0xa0, // Long mode
             base_high: 0,
         }
     }
@@ -99,11 +100,11 @@ impl TssDescriptor {
 
         Self {
             length: limit as u16,
-            base_low: (ptr & 0xFFFF) as u16,
-            base_middle: ((ptr >> 16) & 0xFF) as u8,
+            base_low: (ptr & 0xffff) as u16,
+            base_middle: ((ptr >> 16) & 0xff) as u8,
             access: 0x89, // Present, Available TSS
             granularity: 0,
-            base_high: ((ptr >> 24) & 0xFF) as u8,
+            base_high: ((ptr >> 24) & 0xff) as u8,
             base_upper: (ptr >> 32) as u32,
             reserved: 0,
         }

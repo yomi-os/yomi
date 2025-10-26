@@ -1,22 +1,40 @@
+// Copyright 2025 Yomi OS Development Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 //! Serial port driver (UART 16550)
 //!
 //! This module provides a driver for the 16550 UART serial port,
 //! which is used for kernel debugging output via QEMU serial console.
 
+#![allow(dead_code)]
+
 use core::fmt;
+
 use spin::Mutex;
+
 use crate::interrupts::port::Port;
 
 /// Serial port port numbers
-const COM1: u16 = 0x3F8;
+const COM1: u16 = 0x3f8;
 
 /// UART register offsets
-const DATA: u16 = 0;           // Data register (R/W)
-const INT_ENABLE: u16 = 1;     // Interrupt enable register
-const FIFO_CTRL: u16 = 2;      // FIFO control register
-const LINE_CTRL: u16 = 3;      // Line control register
-const MODEM_CTRL: u16 = 4;     // Modem control register
-const LINE_STATUS: u16 = 5;    // Line status register
+const DATA: u16 = 0; // Data register (R/W)
+const INT_ENABLE: u16 = 1; // Interrupt enable register
+const FIFO_CTRL: u16 = 2; // FIFO control register
+const LINE_CTRL: u16 = 3; // Line control register
+const MODEM_CTRL: u16 = 4; // Modem control register
+const LINE_STATUS: u16 = 5; // Line status register
 
 /// Line status flags
 const LINE_STATUS_OUTPUT_EMPTY: u8 = 0x20;
@@ -55,23 +73,23 @@ impl SerialPort {
             self.line_ctrl.write(0x80);
 
             // Baud rate: 115200 bps (divisor = 1)
-            self.data.write(0x01);       // Divisor Low
+            self.data.write(0x01); // Divisor Low
             self.int_enable.write(0x00); // Divisor High
 
             // 8 bits, no parity, 1 stop bit (DLAB = 0)
             self.line_ctrl.write(0x03);
 
             // Enable FIFO, 14-byte threshold
-            self.fifo_ctrl.write(0xC7);
+            self.fifo_ctrl.write(0xc7);
 
             // Data Terminal Ready, Request To Send, Output 2
-            self.modem_ctrl.write(0x0B);
+            self.modem_ctrl.write(0x0b);
 
             // Test: Set to loopback mode
-            self.modem_ctrl.write(0x1E);
+            self.modem_ctrl.write(0x1e);
 
             // Send test byte
-            self.data.write(0xAE);
+            self.data.write(0xae);
 
             // Wait for data to be available
             let mut timeout = 10000;
@@ -85,13 +103,13 @@ impl SerialPort {
             }
 
             // Check if same byte can be received
-            if self.data.read() != 0xAE {
+            if self.data.read() != 0xae {
                 // Serial port is faulty
                 return;
             }
 
             // Exit loopback mode, return to normal operation
-            self.modem_ctrl.write(0x0F);
+            self.modem_ctrl.write(0x0f);
         }
     }
 

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// Physical address
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -16,7 +18,7 @@ impl PhysAddr {
 
     /// Check if the address is aligned to the given alignment
     pub fn is_aligned(self, align: u64) -> bool {
-        self.0 % align == 0
+        self.0.is_multiple_of(align)
     }
 
     /// Align down to the given alignment
@@ -67,32 +69,32 @@ impl VirtAddr {
 
     /// P4 table index (bits 39-47)
     pub const fn p4_index(self) -> usize {
-        ((self.0 >> 39) & 0x1FF) as usize
+        ((self.0 >> 39) & 0x1ff) as usize
     }
 
     /// P3 table index (bits 30-38)
     pub const fn p3_index(self) -> usize {
-        ((self.0 >> 30) & 0x1FF) as usize
+        ((self.0 >> 30) & 0x1ff) as usize
     }
 
     /// P2 table index (bits 21-29)
     pub const fn p2_index(self) -> usize {
-        ((self.0 >> 21) & 0x1FF) as usize
+        ((self.0 >> 21) & 0x1ff) as usize
     }
 
     /// P1 table index (bits 12-20)
     pub const fn p1_index(self) -> usize {
-        ((self.0 >> 12) & 0x1FF) as usize
+        ((self.0 >> 12) & 0x1ff) as usize
     }
 
     /// Page offset (bits 0-11)
     pub const fn page_offset(self) -> usize {
-        (self.0 & 0xFFF) as usize
+        (self.0 & 0xfff) as usize
     }
 
     /// Check if the address is aligned to the given alignment
     pub fn is_aligned(self, align: u64) -> bool {
-        self.0 % align == 0
+        self.0.is_multiple_of(align)
     }
 
     /// Align down to the given alignment
@@ -135,7 +137,7 @@ impl Page {
     /// Create a page containing the given address
     pub const fn containing_address(addr: VirtAddr) -> Self {
         Self {
-            start_address: VirtAddr::new(addr.as_u64() & !0xFFF),
+            start_address: VirtAddr::new(addr.as_u64() & !0xfff),
         }
     }
 
@@ -196,7 +198,7 @@ impl PhysFrame {
     /// Create a frame containing the given address
     pub const fn containing_address(addr: PhysAddr) -> Self {
         Self {
-            start_address: PhysAddr::new(addr.as_u64() & !0xFFF),
+            start_address: PhysAddr::new(addr.as_u64() & !0xfff),
         }
     }
 
@@ -230,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_virt_addr_indices() {
-        let addr = VirtAddr::new(0xFFFF_FFFF_8000_1234);
+        let addr = VirtAddr::new(0xffff_ffff_8000_1234);
         assert_eq!(addr.p4_index(), 511);
         assert_eq!(addr.p3_index(), 510);
         assert_eq!(addr.p2_index(), 0);

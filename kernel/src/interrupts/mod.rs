@@ -1,15 +1,29 @@
+// Copyright 2025 Yomi OS Development Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 //! Interrupt handling subsystem
 //!
 //! This module provides interrupt and exception handling for the kernel.
 
-pub mod idt;
-pub mod handlers;
-pub mod tss;
 pub mod gdt;
-pub mod port;
+pub mod handlers;
+pub mod idt;
 pub mod pic;
 pub mod pit;
+pub mod port;
 pub mod timer;
+pub mod tss;
 
 use idt::InterruptDescriptorTable;
 use spin::Once;
@@ -24,12 +38,13 @@ static IDT: Once<InterruptDescriptorTable> = Once::new();
 /// Hardware interrupts (IRQs) are mapped to interrupt vectors 32-47.
 /// - IRQ 0-7: Master PIC (vectors 32-39)
 /// - IRQ 8-15: Slave PIC (vectors 40-47)
+#[allow(dead_code)]
 const IRQ_OFFSET: usize = 32;
 
 /// Initializes the Interrupt Descriptor Table
 ///
-/// This function sets up the GDT, TSS with IST stacks, and all exception handlers.
-/// It should be called early in the kernel initialization process.
+/// This function sets up the GDT, TSS with IST stacks, and all exception
+/// handlers. It should be called early in the kernel initialization process.
 ///
 /// # Panics
 ///
@@ -48,17 +63,23 @@ pub fn init() {
         let mut idt = InterruptDescriptorTable::new();
 
         // CPU Exception handlers
-        idt.divide_error.set_handler_fn(handlers::divide_error_handler);
+        idt.divide_error
+            .set_handler_fn(handlers::divide_error_handler);
         idt.debug.set_handler_fn(handlers::debug_handler);
-        idt.non_maskable_interrupt.set_handler_fn(handlers::non_maskable_interrupt_handler);
+        idt.non_maskable_interrupt
+            .set_handler_fn(handlers::non_maskable_interrupt_handler);
         idt.breakpoint.set_handler_fn(handlers::breakpoint_handler);
         idt.overflow.set_handler_fn(handlers::overflow_handler);
-        idt.bound_range_exceeded.set_handler_fn(handlers::bound_range_exceeded_handler);
-        idt.invalid_opcode.set_handler_fn(handlers::invalid_opcode_handler);
-        idt.device_not_available.set_handler_fn(handlers::device_not_available_handler);
+        idt.bound_range_exceeded
+            .set_handler_fn(handlers::bound_range_exceeded_handler);
+        idt.invalid_opcode
+            .set_handler_fn(handlers::invalid_opcode_handler);
+        idt.device_not_available
+            .set_handler_fn(handlers::device_not_available_handler);
 
         // Double Fault handler (diverging)
-        // Use IST index 1 for dedicated stack to prevent triple-fault on stack corruption
+        // Use IST index 1 for dedicated stack to prevent triple-fault on stack
+        // corruption
         idt.double_fault
             .set_handler_fn_diverging_with_error_code(handlers::double_fault_handler)
             .set_ist(1);
@@ -76,16 +97,20 @@ pub fn init() {
             .set_handler_fn_with_error_code(handlers::page_fault_handler);
 
         // More exception handlers
-        idt.x87_floating_point.set_handler_fn(handlers::x87_floating_point_handler);
+        idt.x87_floating_point
+            .set_handler_fn(handlers::x87_floating_point_handler);
         idt.alignment_check
             .set_handler_fn_with_error_code(handlers::alignment_check_handler);
         idt.machine_check
             .set_handler_fn_diverging(handlers::machine_check_handler);
-        idt.simd_floating_point.set_handler_fn(handlers::simd_floating_point_handler);
+        idt.simd_floating_point
+            .set_handler_fn(handlers::simd_floating_point_handler);
 
         // Hardware interrupt handlers (IRQs)
         // Timer (IRQ 0 → vector 32)
-        idt.get_interrupt_entry_mut(0).set_handler_fn(timer::timer_interrupt_handler);
+        // Note: get_interrupt_entry_mut expects relative index 0-223 for vectors 32-255
+        idt.get_interrupt_entry_mut(0)
+            .set_handler_fn(timer::timer_interrupt_handler);
 
         idt
     });
@@ -93,7 +118,7 @@ pub fn init() {
     // Load the IDT into the CPU
     idt.load();
 
-    crate::log_debug!("IDT loaded with {} exception handlers", 20);
+    crate::log_debug!("IDT loaded and configured");
 }
 
 /// Initializes and enables timer interrupts
@@ -188,23 +213,22 @@ pub fn are_enabled() -> bool {
 /// });
 /// ```
 pub fn without_interrupts<F, R>(f: F) -> R
-where
-    F: FnOnce() -> R,
-{
+where F: FnOnce() -> R {
     let enabled = are_enabled();
 
     if enabled {
-        unsafe { disable(); }
+        unsafe {
+            disable();
+        }
     }
 
     let result = f();
 
     if enabled {
-        unsafe { enable(); }
+        unsafe {
+            enable();
+        }
     }
 
     result
 }
-
-/// Re-exports for convenience
-pub use idt::{InterruptStackFrame, HandlerFunc};

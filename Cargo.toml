@@ -1,37 +1,74 @@
 [workspace]
+members = ["kernel"]
 resolver = "2"
-
-members = [
-    "kernel",
-    "drivers/keyboard",
-    "drivers/network",
-    "userland/init",
-    "userland/shell",
-    "userland/coreutils",
-    "xtask",
-]
-
-# xtask is excluded from default members to avoid building it with the no_std target
-default-members = [
-    "kernel",
-    "drivers/keyboard",
-    "drivers/network",
-    "userland/init",
-    "userland/shell",
-    "userland/coreutils",
-]
 
 [workspace.package]
 version = "0.1.0"
-edition = "2024"
-authors = ["Yomi Team"]
-license = "MIT"
+edition = "2021"
+authors = ["Yomi OS Development Team"]
+license = "Apache-2.0"
+repository = "https://github.com/your-org/yomi"
+description = "Yomi OS - Security-focused general-purpose operating system (Kali Linux alternative)"
+readme = "README.md"
+keywords = ["os", "kernel", "security", "pentesting", "x86_64"]
+categories = ["os", "no-std"]
 
-[workspace.dependencies]
-spin = { version = "0.9", default-features = false }
-lazy_static = { version = "1.4", features = ["spin_no_std"] }
-bitflags = "2.4"
-linked_list_allocator = "0.10"
+# Linting configuration for security-focused OS kernel
+[workspace.lints.rust]
+# Forbid level (strongest)
+unsafe_op_in_unsafe_fn = { level = "forbid", priority = 1 }
+
+# Deny level
+keyword_idents = { level = "deny", priority = -1 }
+macro_use_extern_crate = { level = "deny", priority = -1 }
+
+# Warn level
+unsafe_code = "warn"
+missing_docs = "warn"
+unused_imports = "warn"
+dead_code = "warn"
+absolute_paths_not_starting_with_crate = "warn"
+elided_lifetimes_in_paths = "warn"
+explicit_outlives_requirements = "warn"
+missing_debug_implementations = "warn"
+non_ascii_idents = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unused_extern_crates = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+# Lint groups (lower priority)
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Deny level (higher priority overrides)
+dbg_macro = { level = "deny", priority = 1 }
+default_numeric_fallback = { level = "deny", priority = 1 }
+empty_structs_with_brackets = { level = "deny", priority = 1 }
+exit = { level = "deny", priority = 1 }
+mem_forget = { level = "deny", priority = 1 }
+
+# Warn level
+arithmetic_side_effects = "warn"
+as_conversions = "warn"
+float_cmp = "warn"
+lossy_float_literal = "warn"
+panic = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+todo = "warn"
+unimplemented = "warn"
+unwrap_used = "warn"
+
+# Allow level (explicit overrides for OS development)
+cast_precision_loss = { level = "allow", priority = 1 }
+cast_possible_truncation = { level = "allow", priority = 1 }
+cast_sign_loss = { level = "allow", priority = 1 }
+module_name_repetitions = { level = "allow", priority = 1 }
+missing_errors_doc = { level = "allow", priority = 1 }
+missing_panics_doc = { level = "allow", priority = 1 }
 
 [profile.dev]
 panic = "abort"
@@ -39,4 +76,5 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 lto = true
-opt-level = 2
+codegen-units = 1
+opt-level = "z"

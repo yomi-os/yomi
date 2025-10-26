@@ -1,16 +1,18 @@
 //! 8259 PIC (Programmable Interrupt Controller) implementation
 //!
 //! The 8259 PIC is a legacy interrupt controller used in x86 systems.
-//! This module provides initialization and management of the Master/Slave PIC pair.
+//! This module provides initialization and management of the Master/Slave PIC
+//! pair.
+
+use spin::Mutex;
 
 use super::port::Port;
-use spin::Mutex;
 
 /// PIC port numbers
 const PIC1_COMMAND: u16 = 0x20;
 const PIC1_DATA: u16 = 0x21;
-const PIC2_COMMAND: u16 = 0xA0;
-const PIC2_DATA: u16 = 0xA1;
+const PIC2_COMMAND: u16 = 0xa0;
+const PIC2_DATA: u16 = 0xa1;
 
 /// PIC initialization commands
 const ICW1_INIT: u8 = 0x10;
@@ -186,6 +188,7 @@ impl ChainedPics {
     /// # Safety
     ///
     /// Modifies interrupt mask registers.
+    #[allow(dead_code)]
     pub unsafe fn mask(&mut self, irq: u8) {
         let pic = if irq < 8 {
             &mut self.pics[0]

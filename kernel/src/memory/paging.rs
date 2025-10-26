@@ -1,5 +1,13 @@
+#![allow(dead_code)]
+
 use bitflags::bitflags;
-use super::address::{PhysAddr, VirtAddr, Page, PhysFrame};
+
+use super::address::{
+    Page,
+    PhysAddr,
+    PhysFrame,
+    VirtAddr,
+};
 
 bitflags! {
     /// Page table entry flags
@@ -37,6 +45,7 @@ pub struct PageTableEntry {
 
 impl PageTableEntry {
     /// Create a new empty page table entry
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self { entry: 0 }
     }
@@ -55,7 +64,7 @@ impl PageTableEntry {
     pub fn frame(&self) -> Option<PhysFrame> {
         if self.flags().contains(PageTableFlags::PRESENT) {
             // Extract the physical address (bits 12-51)
-            let addr = self.entry & 0x000F_FFFF_FFFF_F000;
+            let addr = self.entry & 0x000f_ffff_ffff_f000;
             Some(PhysFrame::containing_address(PhysAddr::new(addr)))
         } else {
             None
@@ -77,7 +86,7 @@ impl PageTableEntry {
     /// Set flags for this entry
     pub fn set_flags(&mut self, flags: PageTableFlags) {
         // Preserve the address bits, update only the flags
-        let addr = self.entry & 0x000F_FFFF_FFFF_F000;
+        let addr = self.entry & 0x000f_ffff_ffff_f000;
         self.entry = addr | flags.bits();
     }
 }
@@ -100,6 +109,7 @@ pub struct PageTable {
 
 impl PageTable {
     /// Create a new page table with all entries set to unused
+    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             entries: [PageTableEntry::new(); 512],
@@ -155,14 +165,14 @@ impl PageTableManager {
     /// Get the current page table from CR3
     ///
     /// # Safety
-    /// This function is unsafe because it reads from CR3 and creates a mutable reference
-    /// to the page table at that address.
+    /// This function is unsafe because it reads from CR3 and creates a mutable
+    /// reference to the page table at that address.
     pub unsafe fn current() -> Self {
         let cr3: u64;
         core::arch::asm!("mov {}, cr3", out(reg) cr3);
 
         // Extract the page table address (bits 12-51)
-        let p4_table_addr = cr3 & 0x000F_FFFF_FFFF_F000;
+        let p4_table_addr = cr3 & 0x000f_ffff_ffff_f000;
         let p4_table = &mut *(p4_table_addr as *mut PageTable);
 
         Self { p4_table }
@@ -171,7 +181,8 @@ impl PageTableManager {
     /// Create a PageTableManager from a given P4 table
     ///
     /// # Safety
-    /// The caller must ensure that the P4 table is valid and properly initialized.
+    /// The caller must ensure that the P4 table is valid and properly
+    /// initialized.
     pub unsafe fn from_p4_table(p4_table: &'static mut PageTable) -> Self {
         Self { p4_table }
     }
@@ -213,15 +224,12 @@ impl PageTableManager {
     /// Unmap a page
     pub fn unmap_page(&mut self, page: Page) -> Result<PhysFrame, &'static str> {
         // Traverse the page table hierarchy
-        let p4 = unsafe { &*self.p4_table };
-        let p3 = Self::next_table_ptr(p4, page.p4_index())
-            .ok_or("P3 table not present")?;
+        let p4 = &*self.p4_table;
+        let p3 = Self::next_table_ptr(p4, page.p4_index()).ok_or("P3 table not present")?;
         let p3 = unsafe { &*p3 };
-        let p2 = Self::next_table_ptr(p3, page.p3_index())
-            .ok_or("P2 table not present")?;
+        let p2 = Self::next_table_ptr(p3, page.p3_index()).ok_or("P2 table not present")?;
         let p2 = unsafe { &*p2 };
-        let p1 = Self::next_table_ptr(p2, page.p2_index())
-            .ok_or("P1 table not present")?;
+        let p1 = Self::next_table_ptr(p2, page.p2_index()).ok_or("P1 table not present")?;
         let p1 = unsafe { &mut *(p1 as *mut PageTable) };
 
         // Get the entry
@@ -246,7 +254,7 @@ impl PageTableManager {
     /// Translate a virtual address to a physical address
     pub fn translate_addr(&self, addr: VirtAddr) -> Option<PhysAddr> {
         // Traverse the page table hierarchy
-        let p4 = unsafe { &*self.p4_table };
+        let p4 = &*self.p4_table;
         let p3 = Self::next_table_ptr(p4, addr.p4_index())?;
         let p3 = unsafe { &*p3 };
         let p2 = Self::next_table_ptr(p3, addr.p3_index())?;
@@ -353,9 +361,8 @@ mod tests {
 
     #[test]
     fn test_page_table_flags() {
-        let flags = PageTableFlags::PRESENT
-            | PageTableFlags::WRITABLE
-            | PageTableFlags::USER_ACCESSIBLE;
+        let flags =
+            PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
 
         assert!(flags.contains(PageTableFlags::PRESENT));
         assert!(flags.contains(PageTableFlags::WRITABLE));
