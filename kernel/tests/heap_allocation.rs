@@ -13,6 +13,7 @@ extern crate alloc;
 
 use alloc::{
     boxed::Box,
+    vec,
     vec::Vec,
 };
 use core::panic::PanicInfo;
@@ -71,9 +72,10 @@ fn test_box_allocation() {
 
 #[test_case]
 fn test_box_large_value() {
-    let large_array = Box::new([0u8; 4096]);
-    assert_eq!(large_array.len(), 4096);
-    assert_eq!(large_array[0], 0);
+    // Allocate directly on heap to avoid stack pressure
+    let large = vec![0u8; 4096].into_boxed_slice();
+    assert_eq!(large.len(), 4096);
+    assert_eq!(large[0], 0);
 }
 
 #[test_case]

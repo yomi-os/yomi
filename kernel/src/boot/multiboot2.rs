@@ -3,8 +3,6 @@
 //! This module provides types and functions for extracting information
 //! passed by the bootloader (GRUB2) via Multiboot2 protocol.
 
-#![allow(dead_code)]
-
 /// Multiboot2 magic number (passed in EAX by bootloader)
 pub const MULTIBOOT2_MAGIC: u32 = 0x36d76289;
 
@@ -19,14 +17,18 @@ impl Multiboot2Info {
     /// Initialize from magic number and address
     ///
     /// # Safety
-    /// The caller must ensure that `info_addr` points to a valid
-    /// Multiboot2 information structure in memory.
+    /// The caller must ensure that `info_addr` points to a valid and accessible
+    /// Multiboot2 information structure in memory (identity-mapped or otherwise
+    /// accessible at the provided address).
     pub unsafe fn from_ptr(magic: u32, info_addr: usize) -> Option<Self> {
-        if magic == MULTIBOOT2_MAGIC {
-            Some(Self { info_addr })
-        } else {
-            None
+        if magic != MULTIBOOT2_MAGIC {
+            return None;
         }
+        // Multiboot2 info structures are 8-byte aligned; reject null/misaligned pointers early.
+        if info_addr == 0 || (info_addr & 0x7) != 0 {
+            return None;
+        }
+        Some(Self { info_addr })
     }
 
     /// Get memory map iterator

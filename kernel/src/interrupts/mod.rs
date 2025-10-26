@@ -118,7 +118,7 @@ pub fn init() {
     // Load the IDT into the CPU
     idt.load();
 
-    crate::log_debug!("IDT loaded with {} exception handlers", 20);
+    crate::log_debug!("IDT loaded and configured");
 }
 
 /// Initializes and enables timer interrupts
