@@ -38,6 +38,7 @@ static IDT: Once<InterruptDescriptorTable> = Once::new();
 /// Hardware interrupts (IRQs) are mapped to interrupt vectors 32-47.
 /// - IRQ 0-7: Master PIC (vectors 32-39)
 /// - IRQ 8-15: Slave PIC (vectors 40-47)
+#[allow(dead_code)]
 const IRQ_OFFSET: usize = 32;
 
 /// Initializes the Interrupt Descriptor Table
@@ -107,7 +108,8 @@ pub fn init() {
 
         // Hardware interrupt handlers (IRQs)
         // Timer (IRQ 0 → vector 32)
-        idt.get_interrupt_entry_mut(IRQ_OFFSET)
+        // Note: get_interrupt_entry_mut expects relative index 0-223 for vectors 32-255
+        idt.get_interrupt_entry_mut(0)
             .set_handler_fn(timer::timer_interrupt_handler);
 
         idt

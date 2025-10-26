@@ -56,6 +56,7 @@ pub extern "C" fn kernel_main(magic: u32, info_addr: usize) -> ! {
             core::hint::black_box(mbi);
         } else {
             log_fatal!("Invalid Multiboot2 magic: 0x{:08x}", magic);
+            panic!("Invalid Multiboot2 boot (magic mismatch)");
         }
     }
 

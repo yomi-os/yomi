@@ -90,7 +90,7 @@ use_try_shorthand = false
 # Custom settings for kernel development
 # These ensure safety-critical code is clearly formatted
 version = "Two"
-unstable_features = false
+unstable_features = true
 
 # Ensure consistent formatting in match expressions (important for state machines)
 match_arm_leading_pipes = "Never"
