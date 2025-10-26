@@ -23,8 +23,10 @@ fn main() {
 
         let status = Command::new("nasm")
             .args([
-                "-f", "elf64",
-                "-o", obj_file.to_str().unwrap(),
+                "-f",
+                "elf64",
+                "-o",
+                obj_file.to_str().unwrap(),
                 asm_file.to_str().unwrap(),
             ])
             .status()

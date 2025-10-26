@@ -11,31 +11,31 @@ use core::mem;
 /// for interrupts and exceptions.
 #[repr(C, align(16))]
 pub struct InterruptDescriptorTable {
-    pub divide_error: Entry,                    // 0
-    pub debug: Entry,                           // 1
-    pub non_maskable_interrupt: Entry,          // 2
-    pub breakpoint: Entry,                      // 3
-    pub overflow: Entry,                        // 4
-    pub bound_range_exceeded: Entry,            // 5
-    pub invalid_opcode: Entry,                  // 6
-    pub device_not_available: Entry,            // 7
-    pub double_fault: Entry,                    // 8
-    reserved_1: Entry,                          // 9 (Coprocessor Segment Overrun)
-    pub invalid_tss: Entry,                     // 10
-    pub segment_not_present: Entry,             // 11
-    pub stack_segment_fault: Entry,             // 12
-    pub general_protection_fault: Entry,        // 13
-    pub page_fault: Entry,                      // 14
-    reserved_2: Entry,                          // 15
-    pub x87_floating_point: Entry,              // 16
-    pub alignment_check: Entry,                 // 17
-    pub machine_check: Entry,                   // 18
-    pub simd_floating_point: Entry,             // 19
-    pub virtualization: Entry,                  // 20
-    reserved_3: [Entry; 9],                     // 21-29
-    pub security_exception: Entry,              // 30
-    reserved_4: Entry,                          // 31
-    interrupts: [Entry; 224],                   // 32-255 (IRQs and user-defined)
+    pub divide_error: Entry,             // 0
+    pub debug: Entry,                    // 1
+    pub non_maskable_interrupt: Entry,   // 2
+    pub breakpoint: Entry,               // 3
+    pub overflow: Entry,                 // 4
+    pub bound_range_exceeded: Entry,     // 5
+    pub invalid_opcode: Entry,           // 6
+    pub device_not_available: Entry,     // 7
+    pub double_fault: Entry,             // 8
+    reserved_1: Entry,                   // 9 (Coprocessor Segment Overrun)
+    pub invalid_tss: Entry,              // 10
+    pub segment_not_present: Entry,      // 11
+    pub stack_segment_fault: Entry,      // 12
+    pub general_protection_fault: Entry, // 13
+    pub page_fault: Entry,               // 14
+    reserved_2: Entry,                   // 15
+    pub x87_floating_point: Entry,       // 16
+    pub alignment_check: Entry,          // 17
+    pub machine_check: Entry,            // 18
+    pub simd_floating_point: Entry,      // 19
+    pub virtualization: Entry,           // 20
+    reserved_3: [Entry; 9],              // 21-29
+    pub security_exception: Entry,       // 30
+    reserved_4: Entry,                   // 31
+    interrupts: [Entry; 224],            // 32-255 (IRQs and user-defined)
 }
 
 impl InterruptDescriptorTable {
@@ -107,12 +107,12 @@ impl InterruptDescriptorTable {
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct Entry {
-    pointer_low: u16,       // Bits 0-15 of handler address
-    gdt_selector: u16,      // Code segment selector
-    options: EntryOptions,  // Type and attributes
-    pointer_middle: u16,    // Bits 16-31 of handler address
-    pointer_high: u32,      // Bits 32-63 of handler address
-    reserved: u32,          // Reserved (must be 0)
+    pointer_low: u16,      // Bits 0-15 of handler address
+    gdt_selector: u16,     // Code segment selector
+    options: EntryOptions, // Type and attributes
+    pointer_middle: u16,   // Bits 16-31 of handler address
+    pointer_high: u32,     // Bits 32-63 of handler address
+    reserved: u32,         // Reserved (must be 0)
 }
 
 impl Entry {
@@ -167,10 +167,7 @@ impl Entry {
     /// Sets the diverging handler function for this entry
     ///
     /// Used for handlers that never return (like Double Fault).
-    pub fn set_handler_fn_diverging(
-        &mut self,
-        handler: DivergingHandlerFunc,
-    ) -> &mut EntryOptions {
+    pub fn set_handler_fn_diverging(&mut self, handler: DivergingHandlerFunc) -> &mut EntryOptions {
         let addr = handler as u64;
 
         self.pointer_low = addr as u16;

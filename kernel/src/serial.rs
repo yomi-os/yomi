@@ -3,20 +3,20 @@
 //! This module provides a driver for the 16550 UART serial port,
 //! which is used for kernel debugging output via QEMU serial console.
 
+use crate::interrupts::port::Port;
 use core::fmt;
 use spin::Mutex;
-use crate::interrupts::port::Port;
 
 /// Serial port port numbers
 const COM1: u16 = 0x3F8;
 
 /// UART register offsets
-const DATA: u16 = 0;           // Data register (R/W)
-const INT_ENABLE: u16 = 1;     // Interrupt enable register
-const FIFO_CTRL: u16 = 2;      // FIFO control register
-const LINE_CTRL: u16 = 3;      // Line control register
-const MODEM_CTRL: u16 = 4;     // Modem control register
-const LINE_STATUS: u16 = 5;    // Line status register
+const DATA: u16 = 0; // Data register (R/W)
+const INT_ENABLE: u16 = 1; // Interrupt enable register
+const FIFO_CTRL: u16 = 2; // FIFO control register
+const LINE_CTRL: u16 = 3; // Line control register
+const MODEM_CTRL: u16 = 4; // Modem control register
+const LINE_STATUS: u16 = 5; // Line status register
 
 /// Line status flags
 const LINE_STATUS_OUTPUT_EMPTY: u8 = 0x20;
@@ -55,7 +55,7 @@ impl SerialPort {
             self.line_ctrl.write(0x80);
 
             // Baud rate: 115200 bps (divisor = 1)
-            self.data.write(0x01);       // Divisor Low
+            self.data.write(0x01); // Divisor Low
             self.int_enable.write(0x00); // Divisor High
 
             // 8 bits, no parity, 1 stop bit (DLAB = 0)

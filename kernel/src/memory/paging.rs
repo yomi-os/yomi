@@ -1,5 +1,5 @@
+use super::address::{Page, PhysAddr, PhysFrame, VirtAddr};
 use bitflags::bitflags;
-use super::address::{PhysAddr, VirtAddr, Page, PhysFrame};
 
 bitflags! {
     /// Page table entry flags
@@ -214,14 +214,11 @@ impl PageTableManager {
     pub fn unmap_page(&mut self, page: Page) -> Result<PhysFrame, &'static str> {
         // Traverse the page table hierarchy
         let p4 = unsafe { &*self.p4_table };
-        let p3 = Self::next_table_ptr(p4, page.p4_index())
-            .ok_or("P3 table not present")?;
+        let p3 = Self::next_table_ptr(p4, page.p4_index()).ok_or("P3 table not present")?;
         let p3 = unsafe { &*p3 };
-        let p2 = Self::next_table_ptr(p3, page.p3_index())
-            .ok_or("P2 table not present")?;
+        let p2 = Self::next_table_ptr(p3, page.p3_index()).ok_or("P2 table not present")?;
         let p2 = unsafe { &*p2 };
-        let p1 = Self::next_table_ptr(p2, page.p2_index())
-            .ok_or("P1 table not present")?;
+        let p1 = Self::next_table_ptr(p2, page.p2_index()).ok_or("P1 table not present")?;
         let p1 = unsafe { &mut *(p1 as *mut PageTable) };
 
         // Get the entry
@@ -353,9 +350,8 @@ mod tests {
 
     #[test]
     fn test_page_table_flags() {
-        let flags = PageTableFlags::PRESENT
-            | PageTableFlags::WRITABLE
-            | PageTableFlags::USER_ACCESSIBLE;
+        let flags =
+            PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
 
         assert!(flags.contains(PageTableFlags::PRESENT));
         assert!(flags.contains(PageTableFlags::WRITABLE));

@@ -49,7 +49,7 @@ impl GdtEntry {
             limit_low: 0,
             base_low: 0,
             base_middle: 0,
-            access: 0x9A, // Present, Ring 0, Code segment, Executable, Readable
+            access: 0x9A,      // Present, Ring 0, Code segment, Executable, Readable
             granularity: 0xA0, // Long mode
             base_high: 0,
         }

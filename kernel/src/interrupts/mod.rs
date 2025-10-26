@@ -2,14 +2,14 @@
 //!
 //! This module provides interrupt and exception handling for the kernel.
 
-pub mod idt;
-pub mod handlers;
-pub mod tss;
 pub mod gdt;
-pub mod port;
+pub mod handlers;
+pub mod idt;
 pub mod pic;
 pub mod pit;
+pub mod port;
 pub mod timer;
+pub mod tss;
 
 use idt::InterruptDescriptorTable;
 use spin::Once;
@@ -48,14 +48,19 @@ pub fn init() {
         let mut idt = InterruptDescriptorTable::new();
 
         // CPU Exception handlers
-        idt.divide_error.set_handler_fn(handlers::divide_error_handler);
+        idt.divide_error
+            .set_handler_fn(handlers::divide_error_handler);
         idt.debug.set_handler_fn(handlers::debug_handler);
-        idt.non_maskable_interrupt.set_handler_fn(handlers::non_maskable_interrupt_handler);
+        idt.non_maskable_interrupt
+            .set_handler_fn(handlers::non_maskable_interrupt_handler);
         idt.breakpoint.set_handler_fn(handlers::breakpoint_handler);
         idt.overflow.set_handler_fn(handlers::overflow_handler);
-        idt.bound_range_exceeded.set_handler_fn(handlers::bound_range_exceeded_handler);
-        idt.invalid_opcode.set_handler_fn(handlers::invalid_opcode_handler);
-        idt.device_not_available.set_handler_fn(handlers::device_not_available_handler);
+        idt.bound_range_exceeded
+            .set_handler_fn(handlers::bound_range_exceeded_handler);
+        idt.invalid_opcode
+            .set_handler_fn(handlers::invalid_opcode_handler);
+        idt.device_not_available
+            .set_handler_fn(handlers::device_not_available_handler);
 
         // Double Fault handler (diverging)
         // Use IST index 1 for dedicated stack to prevent triple-fault on stack corruption
@@ -76,16 +81,19 @@ pub fn init() {
             .set_handler_fn_with_error_code(handlers::page_fault_handler);
 
         // More exception handlers
-        idt.x87_floating_point.set_handler_fn(handlers::x87_floating_point_handler);
+        idt.x87_floating_point
+            .set_handler_fn(handlers::x87_floating_point_handler);
         idt.alignment_check
             .set_handler_fn_with_error_code(handlers::alignment_check_handler);
         idt.machine_check
             .set_handler_fn_diverging(handlers::machine_check_handler);
-        idt.simd_floating_point.set_handler_fn(handlers::simd_floating_point_handler);
+        idt.simd_floating_point
+            .set_handler_fn(handlers::simd_floating_point_handler);
 
         // Hardware interrupt handlers (IRQs)
         // Timer (IRQ 0 → vector 32)
-        idt.get_interrupt_entry_mut(0).set_handler_fn(timer::timer_interrupt_handler);
+        idt.get_interrupt_entry_mut(0)
+            .set_handler_fn(timer::timer_interrupt_handler);
 
         idt
     });
@@ -194,17 +202,21 @@ where
     let enabled = are_enabled();
 
     if enabled {
-        unsafe { disable(); }
+        unsafe {
+            disable();
+        }
     }
 
     let result = f();
 
     if enabled {
-        unsafe { enable(); }
+        unsafe {
+            enable();
+        }
     }
 
     result
 }
 
 /// Re-exports for convenience
-pub use idt::{InterruptStackFrame, HandlerFunc};
+pub use idt::{HandlerFunc, InterruptStackFrame};

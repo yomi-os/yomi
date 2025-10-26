@@ -46,7 +46,8 @@ impl BumpAllocator {
             self.heap_start == 0 && self.heap_end == 0 && self.next == 0 && self.allocations == 0,
             "BumpAllocator::init called more than once"
         );
-        let end = heap_start.checked_add(heap_size)
+        let end = heap_start
+            .checked_add(heap_size)
             .expect("heap region overflow");
         self.heap_start = heap_start;
         self.heap_end = end;

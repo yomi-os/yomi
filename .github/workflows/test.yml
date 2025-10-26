@@ -24,10 +24,10 @@ jobs:
         with:
           components: rust-src, llvm-tools-preview
 
-      - name: Install QEMU
+      - name: Install QEMU and NASM
         run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-x86
+          sudo apt-get install -y qemu-system-x86 nasm
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -79,6 +79,11 @@ jobs:
         with:
           components: rustfmt, clippy, rust-src
 
+      - name: Install NASM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -98,6 +103,11 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: rust-src
+
+      - name: Install NASM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm
 
       - name: Build kernel (debug)
         working-directory: kernel

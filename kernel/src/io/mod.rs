@@ -5,4 +5,4 @@
 
 pub mod logging;
 
-pub use logging::{LogLevel, log, set_log_level, get_log_level};
+pub use logging::{get_log_level, log, set_log_level, LogLevel};

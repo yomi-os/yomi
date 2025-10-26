@@ -40,8 +40,11 @@ pub fn init_heap() {
         ALLOCATOR.lock().init(heap_start, HEAP_SIZE);
     }
 
-    crate::log_debug!("Heap initialized: start = {:#x}, size = {} KB",
-                      core::ptr::addr_of!(HEAP) as usize, HEAP_SIZE / 1024);
+    crate::log_debug!(
+        "Heap initialized: start = {:#x}, size = {} KB",
+        core::ptr::addr_of!(HEAP) as usize,
+        HEAP_SIZE / 1024
+    );
 }
 
 /// Get current heap usage statistics

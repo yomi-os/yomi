@@ -8,13 +8,13 @@ extern crate alloc;
 use core::panic::PanicInfo;
 
 mod boot;
-mod memory;
 mod interrupts;
-mod time;
-mod serial;
 mod io;
+mod memory;
+mod serial;
+mod time;
 
-use alloc::{vec, boxed::Box};
+use alloc::{boxed::Box, vec};
 use interrupts::timer;
 
 /// Kernel entry point called from boot.asm

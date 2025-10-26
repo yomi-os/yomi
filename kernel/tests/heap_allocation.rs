@@ -11,8 +11,8 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
 use alloc::boxed::Box;
+use alloc::vec::Vec;
 use core::panic::PanicInfo;
 
 /// Entry point for heap allocation test

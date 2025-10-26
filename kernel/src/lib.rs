@@ -10,17 +10,20 @@ extern crate alloc;
 use core::panic::PanicInfo;
 
 pub mod boot;
-pub mod memory;
 pub mod interrupts;
-pub mod time;
-pub mod serial;
 pub mod io;
+pub mod memory;
+pub mod serial;
 pub mod testing;
+pub mod time;
 
-pub use boot::{Multiboot2Info, MemoryRegion, MemoryRegionType};
-pub use memory::{PhysAddr, VirtAddr, Page, PhysFrame, PageTable, PageTableEntry, PageTableFlags, PageTableManager};
+pub use boot::{MemoryRegion, MemoryRegionType, Multiboot2Info};
+pub use memory::{
+    Page, PageTable, PageTableEntry, PageTableFlags, PageTableManager, PhysAddr, PhysFrame,
+    VirtAddr,
+};
 
-use alloc::{vec, boxed::Box};
+use alloc::{boxed::Box, vec};
 use interrupts::timer;
 
 /// Kernel main entry point called from boot64.asm
