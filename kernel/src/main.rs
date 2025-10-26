@@ -1,3 +1,17 @@
+// Copyright 2025 Yomi OS Development Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #![no_std]
 #![no_main]
 #![feature(abi_x86_interrupt)]
@@ -23,12 +37,23 @@ use interrupts::timer;
 /// * `magic` - Multiboot2 magic number (should be 0x36d76289)
 /// * `info_addr` - Physical address of Multiboot2 information structure
 #[no_mangle]
-pub extern "C" fn kernel_main(_magic: u32, _info_addr: usize) -> ! {
+pub extern "C" fn kernel_main(magic: u32, info_addr: usize) -> ! {
     // Initialize serial port for logging
     serial::init();
 
     log_info!("YomiOS Kernel v{}", env!("CARGO_PKG_VERSION"));
     log_debug!("Debug logging enabled");
+
+    // Validate Multiboot2 boot
+    unsafe {
+        if let Some(mbi) = boot::multiboot2::Multiboot2Info::from_ptr(magic, info_addr) {
+            log_info!("Multiboot2 boot validated");
+            // Store multiboot info for later use (e.g., memory map parsing)
+            core::hint::black_box(mbi);
+        } else {
+            log_fatal!("Invalid Multiboot2 magic: 0x{:08x}", magic);
+        }
+    }
 
     // Initialize heap allocator
     log_info!("Initializing memory subsystem...");
