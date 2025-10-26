@@ -173,7 +173,7 @@ fn print_stack_trace() {
 fn is_valid_kernel_address(addr: u64) -> bool {
     // Kernel space: 0xFFFF800000000000 and above
     // Also check it's not null and not too high
-    addr >= 0xffff_8000_0000_0000 && addr < 0xffff_ffff_ffff_ffff
+    (0xffff_8000_0000_0000..0xffff_ffff_ffff_ffff).contains(&addr)
 }
 
 /// Print CPU register dump
