@@ -28,6 +28,7 @@ mod memory;
 mod panic;
 mod serial;
 mod time;
+mod vga;
 
 use alloc::{
     boxed::Box,
@@ -43,11 +44,24 @@ use interrupts::timer;
 /// * `info_addr` - Physical address of Multiboot2 information structure
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, info_addr: usize) -> ! {
+    // Initialize VGA for early boot debugging
+    // This must come first as it provides fallback output if serial fails
+    unsafe {
+        vga::init();
+    }
+    vga_println!("YomiOS Boot");
+    vga::write_diagnostic("[BOOT]");
+
     // Initialize serial port for logging
     serial::init();
 
+    // Test raw serial output immediately after init
+    serial_println!("=== YomiOS Serial Console Test ===");
+    serial_println!("Serial port initialized successfully!");
+
     log_info!("YomiOS Kernel v{}", env!("CARGO_PKG_VERSION"));
     log_debug!("Debug logging enabled");
+    vga::write_diagnostic("[SERIAL]");
 
     // Validate Multiboot2 boot
     unsafe {
