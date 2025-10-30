@@ -20,7 +20,6 @@ Thumbs.db
 build/
 
 # Reference files (kept locally but not committed)
-ref/
 plan/
 
 # Python cache
