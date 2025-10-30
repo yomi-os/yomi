@@ -65,9 +65,9 @@ impl SerialPort {
 
     /// Initialize serial port with retry logic
     ///
-    /// This function attempts to initialize the serial port up to `max_retries` times.
-    /// It includes proper reset sequences and delays to handle timing issues with
-    /// serial hardware or emulators like QEMU.
+    /// This function attempts to initialize the serial port up to `max_retries`
+    /// times. It includes proper reset sequences and delays to handle
+    /// timing issues with serial hardware or emulators like QEMU.
     pub fn init(&mut self) {
         const MAX_RETRIES: u32 = 3;
 

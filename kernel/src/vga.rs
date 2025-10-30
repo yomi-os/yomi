@@ -32,7 +32,7 @@ const VGA_WIDTH: usize = 80;
 const VGA_HEIGHT: usize = 25;
 
 /// VGA buffer physical address
-const VGA_BUFFER_ADDR: usize = 0xB8000;
+const VGA_BUFFER_ADDR: usize = 0xb8000;
 
 /// VGA color codes
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

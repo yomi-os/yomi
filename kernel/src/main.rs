@@ -19,23 +19,30 @@
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
-
-mod boot;
-mod interrupts;
-mod io;
-mod memory;
-mod panic;
-mod serial;
-mod time;
-mod vga;
-
+// Use modules from the library crate instead of redeclaring them
+// This prevents duplicate compilation of modules with separate statics/macros
 use alloc::{
     boxed::Box,
     vec,
 };
 
 use interrupts::timer;
+use yomi_kernel::{
+    boot,
+    interrupts,
+    log_debug,
+    log_error,
+    log_fatal,
+    log_info,
+    log_warn,
+    memory,
+    printk,
+    serial,
+    serial_println,
+    vga,
+    // Import macros exported by the library
+    vga_println,
+};
 
 /// Kernel entry point called from boot.asm
 ///
@@ -128,7 +135,4 @@ pub extern "C" fn kernel_main(magic: u32, info_addr: usize) -> ! {
     }
 }
 
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    crate::panic::panic_handler(info)
-}
+// Panic handler is provided by the library (yomi_kernel::panic)
