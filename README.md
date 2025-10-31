@@ -37,21 +37,31 @@ cargo xtask run
 Debug the kernel with GDB:
 
 ```bash
-# Build kernel and ISO (if not already built)
-cargo build --package yomi-kernel
-./scripts/build-iso.sh
+# Launch debug session (starts QEMU with GDB server)
+cargo xtask debug
 
-# Quick start debugging
-./scripts/debug.sh
-
-# Or manually start QEMU in debug mode
-./scripts/run-qemu.sh debug
+# Or run QEMU in debug mode (manual)
+cargo xtask run --mode debug
 
 # Then connect with GDB (in another terminal)
 rust-gdb target/x86_64-unknown-none/debug/yomi-kernel
+(gdb) target remote :1234
+(gdb) continue
 ```
 
-For detailed debugging instructions, see the [Debugging Guide](docs/debugging-guide.md).
+## 🧪 Testing
+
+Run integration tests:
+
+```bash
+# Run all tests
+cargo xtask test
+
+# Run specific test
+cargo xtask test --filter heap_allocation
+```
+
+For detailed debugging and testing instructions, see [docs/XTASK_MIGRATION.md](docs/XTASK_MIGRATION.md).
 
 ## 🤝 Contributing
 
