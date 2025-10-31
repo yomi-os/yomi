@@ -25,7 +25,10 @@
 
 use core::panic::PanicInfo;
 
-use crate::println;
+use crate::{
+    println,
+    vga_println,
+};
 
 /// Main panic handler implementation
 ///
@@ -45,14 +48,21 @@ pub fn panic_handler(info: &PanicInfo) -> ! {
         crate::interrupts::disable();
     }
 
-    // Print panic banner
+    // Print panic banner (to both VGA and serial)
     println!();
     println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     println!("!!!     KERNEL PANIC             !!!");
     println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     println!();
 
-    // Print panic location
+    // Also output to VGA in case serial is not working
+    vga_println!();
+    vga_println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    vga_println!("!!!     KERNEL PANIC             !!!");
+    vga_println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    vga_println!();
+
+    // Print panic location (to both VGA and serial)
     if let Some(location) = info.location() {
         println!(
             "Panic at {}:{}:{}",
@@ -60,13 +70,21 @@ pub fn panic_handler(info: &PanicInfo) -> ! {
             location.line(),
             location.column()
         );
+        vga_println!(
+            "Panic at {}:{}:{}",
+            location.file(),
+            location.line(),
+            location.column()
+        );
     } else {
         println!("Panic at unknown location");
+        vga_println!("Panic at unknown location");
     }
 
     // Print panic message
     let message = info.message();
     println!("Message: {}", message);
+    vga_println!("Message: {}", message);
 
     println!();
 

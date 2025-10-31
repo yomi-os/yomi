@@ -31,6 +31,7 @@ pub mod panic;
 pub mod serial;
 pub mod testing;
 pub mod time;
+pub mod vga;
 
 pub use boot::{
     MemoryRegion,
@@ -50,6 +51,9 @@ pub use memory::{
 
 /// Kernel initialization function
 pub fn init() {
+    unsafe {
+        vga::init();
+    }
     serial::init();
     memory::init_heap();
     interrupts::init();
