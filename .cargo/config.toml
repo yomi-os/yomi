@@ -2,7 +2,6 @@
 x = "run --package xtask --"
 
 [target.x86_64-unknown-none]
-linker = "/usr/bin/ld"
 rustflags = [
     "-C", "link-arg=--nmagic",
     "-C", "link-arg=--no-dynamic-linker",
@@ -11,5 +10,11 @@ rustflags = [
     "-C", "force-frame-pointers=yes",
 ]
 
-# Test runner configuration
-runner = "sh -c 'KERNEL_BIN=$0 ../scripts/run-qemu.sh test'"
+# Platform-specific linker configuration
+# Windows: Use ld.lld from LLVM (install: winget install LLVM.LLVM)
+[target.x86_64-unknown-none.'cfg(host_os = "windows")']
+linker = "C:\\Program Files\\LLVM\\bin\\ld.lld.exe"
+
+# Linux/macOS: Use system ld or lld
+[target.x86_64-unknown-none.'cfg(not(host_os = "windows"))']
+linker = "ld.lld"

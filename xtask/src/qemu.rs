@@ -2,9 +2,7 @@ use anyhow::{Context, Result};
 use std::process::Command;
 
 use crate::iso::create_iso;
-use crate::util::{
-    ensure_command, ensure_file_exists, print_info, print_step, project_root,
-};
+use crate::util::{ensure_file_exists, print_info, print_step, project_root};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QemuMode {
@@ -24,27 +22,79 @@ impl QemuMode {
     }
 }
 
+/// Get the QEMU executable path (platform-specific)
+fn get_qemu_path() -> Result<String> {
+    #[cfg(windows)]
+    {
+        // Check common Windows installation paths
+        let paths = [
+            r"C:\Program Files\qemu\qemu-system-x86_64.exe",
+            r"C:\Program Files (x86)\qemu\qemu-system-x86_64.exe",
+        ];
+
+        for path in &paths {
+            if std::path::Path::new(path).exists() {
+                return Ok(path.to_string());
+            }
+        }
+
+        // Try PATH as fallback
+        if which_qemu().is_some() {
+            return Ok("qemu-system-x86_64".to_string());
+        }
+
+        anyhow::bail!(
+            "QEMU not found. Install with: winget install SoftwareFreedomConservancy.QEMU\n\
+             Or run: cargo x setup"
+        );
+    }
+
+    #[cfg(not(windows))]
+    {
+        if which_qemu().is_some() {
+            return Ok("qemu-system-x86_64".to_string());
+        }
+
+        anyhow::bail!(
+            "QEMU not found. Install with: sudo apt install qemu-system-x86\n\
+             Or run: cargo x setup"
+        );
+    }
+}
+
+/// Check if qemu-system-x86_64 is in PATH
+fn which_qemu() -> Option<()> {
+    #[cfg(windows)]
+    let check_cmd = "where";
+    #[cfg(not(windows))]
+    let check_cmd = "which";
+
+    Command::new(check_cmd)
+        .arg("qemu-system-x86_64")
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .map(|_| ())
+}
+
 /// Run the kernel in QEMU
 pub fn run_qemu(mode: QemuMode, release: bool) -> Result<()> {
     print_step(&format!("Starting QEMU in {:?} mode", mode));
 
-    // Ensure QEMU is installed
-    ensure_command("qemu-system-x86_64", "sudo apt install qemu-system-x86")?;
+    // Get QEMU path
+    let qemu_path = get_qemu_path()?;
 
     // Ensure ISO exists
     let root = project_root()?;
     let iso_path = root.join("yomios.iso");
 
-    if !iso_path.exists() {
-        print_info("ISO not found, building...");
-        create_iso(release)?;
-    }
-
+    print_info("Rebuilding ISO to match the requested profile...");
+    create_iso(release)?;
     ensure_file_exists(&iso_path, "cargo xtask iso")?;
     print_info(&format!("Booting from ISO: {}", iso_path.display()));
 
     // Build QEMU command
-    let mut cmd = Command::new("qemu-system-x86_64");
+    let mut cmd = Command::new(&qemu_path);
 
     // Common options
     cmd.arg("-cdrom")

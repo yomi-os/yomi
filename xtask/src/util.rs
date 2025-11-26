@@ -21,7 +21,12 @@ pub fn run_cmd(cmd: &str, args: &[&str]) -> Result<ExitStatus> {
 
 /// Check if a command exists in PATH
 pub fn command_exists(cmd: &str) -> bool {
-    Command::new("which")
+    #[cfg(windows)]
+    let check_cmd = "where";
+    #[cfg(not(windows))]
+    let check_cmd = "which";
+
+    Command::new(check_cmd)
         .arg(cmd)
         .output()
         .map(|output| output.status.success())
@@ -29,6 +34,7 @@ pub fn command_exists(cmd: &str) -> bool {
 }
 
 /// Ensure a command exists, or return an error with installation hint
+#[allow(dead_code)]
 pub fn ensure_command(cmd: &str, install_hint: &str) -> Result<()> {
     if !command_exists(cmd) {
         anyhow::bail!(

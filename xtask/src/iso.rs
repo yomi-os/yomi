@@ -1,20 +1,15 @@
 use anyhow::{Context, Result};
 use std::fs;
+use std::process::Command;
 
 use crate::build::build_kernel;
 use crate::util::{
-    ensure_command, kernel_binary, print_info, print_step, print_success, project_root, run_cmd,
+    kernel_binary, print_info, print_step, print_success, project_root,
 };
 
 /// Create a bootable ISO image
 pub fn create_iso(release: bool) -> Result<()> {
     print_step("Creating Bootable ISO Image");
-
-    // Ensure GRUB is installed
-    ensure_command(
-        "grub-mkrescue",
-        "sudo apt install grub-pc-bin xorriso",
-    )?;
 
     // First build the kernel
     build_kernel(release)?;
@@ -63,18 +58,77 @@ menuentry "YomiOS" {
         .context("Failed to write GRUB configuration")?;
 
     // Create ISO using grub-mkrescue
-    print_info("Running grub-mkrescue...");
     let iso_path = root.join("yomios.iso");
 
-    run_cmd(
-        "grub-mkrescue",
-        &[
-            "-o",
-            iso_path.to_str().context("Invalid ISO path")?,
-            iso_dir.to_str().context("Invalid ISO dir path")?,
-        ],
-    )?;
+    run_grub_mkrescue(&iso_path, &iso_dir)?;
 
     print_success(&format!("ISO created: {}", iso_path.display()));
     Ok(())
+}
+
+/// Run grub-mkrescue, using WSL on Windows
+fn run_grub_mkrescue(iso_path: &std::path::Path, iso_dir: &std::path::Path) -> Result<()> {
+    print_info("Running grub-mkrescue...");
+
+    #[cfg(windows)]
+    {
+        // On Windows, use WSL to run grub-mkrescue
+        let iso_path_wsl = windows_to_wsl_path(iso_path)?;
+        let iso_dir_wsl = windows_to_wsl_path(iso_dir)?;
+
+        print_info(&format!("Using WSL path: {} -> {}", iso_dir.display(), iso_dir_wsl));
+
+        let status = Command::new("wsl")
+            .args([
+                "grub-mkrescue",
+                "-o",
+                &iso_path_wsl,
+                &iso_dir_wsl,
+            ])
+            .status()
+            .context("Failed to run grub-mkrescue via WSL. Run 'cargo x setup' first.")?;
+
+        if !status.success() {
+            anyhow::bail!("grub-mkrescue failed. Ensure WSL has grub-pc-bin and xorriso installed.");
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        // On Linux/macOS, run grub-mkrescue directly
+        let status = Command::new("grub-mkrescue")
+            .args([
+                "-o",
+                iso_path.to_str().context("Invalid ISO path")?,
+                iso_dir.to_str().context("Invalid ISO dir path")?,
+            ])
+            .status()
+            .context("Failed to run grub-mkrescue. Install with: sudo apt install grub-pc-bin xorriso")?;
+
+        if !status.success() {
+            anyhow::bail!("grub-mkrescue failed");
+        }
+    }
+
+    Ok(())
+}
+
+/// Convert Windows path to WSL path (e.g., C:\foo\bar -> /mnt/c/foo/bar)
+#[cfg(windows)]
+fn windows_to_wsl_path(path: &std::path::Path) -> Result<String> {
+    let path_str = path.to_str().context("Invalid path")?;
+
+    // Handle UNC-style paths like \\?\C:\...
+    let path_str = path_str.strip_prefix(r"\\?\").unwrap_or(path_str);
+
+    // Convert C:\foo\bar to /mnt/c/foo/bar
+    if let Some(drive_rest) = path_str.strip_prefix(|c: char| c.is_ascii_alphabetic()) {
+        if let Some(rest) = drive_rest.strip_prefix(':') {
+            let drive_letter = path_str.chars().next().unwrap().to_ascii_lowercase();
+            let unix_path = rest.replace('\\', "/");
+            return Ok(format!("/mnt/{}{}", drive_letter, unix_path));
+        }
+    }
+
+    anyhow::bail!("Could not convert Windows path to WSL path: {}", path_str)
 }

@@ -2,6 +2,7 @@ mod build;
 mod debug;
 mod iso;
 mod qemu;
+mod setup;
 mod test;
 mod util;
 
@@ -13,6 +14,7 @@ use build::build_kernel;
 use debug::debug_kernel;
 use iso::create_iso;
 use qemu::{run_qemu, QemuMode};
+use setup::setup_environment;
 use test::run_tests;
 
 #[derive(Parser)]
@@ -67,6 +69,9 @@ enum Command {
 
     /// Clean build artifacts
     Clean,
+
+    /// Setup development environment (install dependencies)
+    Setup,
 }
 
 fn main() {
@@ -103,6 +108,10 @@ fn run() -> Result<()> {
 
         Command::Clean => {
             clean()?;
+        }
+
+        Command::Setup => {
+            setup_environment()?;
         }
     }
 

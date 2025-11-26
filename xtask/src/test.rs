@@ -106,18 +106,35 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
             .context("Failed to build test")?;
 
         if !build_result.status.success() {
-            print_warning(&format!("Failed to build test: {}", test_name));
+            print_error(&format!("Failed to build test: {}", test_name));
+            failed += 1;
+            failed_tests.push(test_name.clone());
             continue;
         }
 
-        // Find the test binary
-        let target_dir = kernel_target_dir(false)?;
-        let test_bin = target_dir.join(&test_name);
+        // Find the hashed test binary under target/.../deps
+        let deps_dir = kernel_target_dir(false)?.join("deps");
+        let test_bin = fs::read_dir(&deps_dir)
+            .with_context(|| format!("Failed to list {}", deps_dir.display()))?
+            .filter_map(|entry| entry.ok().map(|e| e.path()))
+            .find(|path| {
+                path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| {
+                        name.starts_with(&format!("{}-", test_name))
+                            && !name.ends_with(".d")
+                    })
+            });
 
-        if !test_bin.exists() {
-            print_warning(&format!("Test binary not found: {}", test_bin.display()));
-            continue;
-        }
+        let test_bin = match test_bin {
+            Some(bin) => bin,
+            None => {
+                print_error(&format!("Test binary not found for: {}", test_name));
+                failed += 1;
+                failed_tests.push(test_name.clone());
+                continue;
+            }
+        };
 
         // Run the test in QEMU
         let test_result = Command::new("qemu-system-x86_64")

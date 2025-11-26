@@ -15,11 +15,8 @@ pub fn debug_kernel(release: bool) -> Result<()> {
     let root = project_root()?;
     let iso_path = root.join("yomios.iso");
 
-    if !iso_path.exists() {
-        print_info("ISO not found, building...");
-        create_iso(release)?;
-    }
-
+    print_info("Rebuilding ISO to match the requested profile...");
+    create_iso(release)?;
     ensure_file_exists(&iso_path, "cargo xtask iso")?;
 
     // Ensure kernel binary exists (needed for symbols)
