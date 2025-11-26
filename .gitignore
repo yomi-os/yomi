@@ -25,3 +25,6 @@ plan/
 # Python cache
 __pycache__/
 *.pyc
+
+# Claude settings
+.claude/
