@@ -28,6 +28,7 @@ pub mod interrupts;
 pub mod io;
 pub mod memory;
 pub mod panic;
+pub mod process;
 pub mod serial;
 pub mod testing;
 pub mod time;
@@ -47,6 +48,15 @@ pub use memory::{
     PhysAddr,
     PhysFrame,
     VirtAddr,
+};
+pub use process::{
+    CapabilitySet,
+    Process,
+    ProcessContext,
+    ProcessError,
+    ProcessId,
+    ProcessState,
+    ProcessTable,
 };
 
 /// Kernel initialization function
