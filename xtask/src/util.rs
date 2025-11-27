@@ -1,7 +1,16 @@
-use anyhow::{Context, Result};
+use std::{
+    path::Path,
+    process::{
+        Command,
+        ExitStatus,
+    },
+};
+
+use anyhow::{
+    Context,
+    Result,
+};
 use colored::Colorize;
-use std::process::{Command, ExitStatus};
-use std::path::Path;
 
 /// Run a command and print its status
 pub fn run_cmd(cmd: &str, args: &[&str]) -> Result<ExitStatus> {
@@ -48,8 +57,7 @@ pub fn ensure_command(cmd: &str, install_hint: &str) -> Result<()> {
 
 /// Get the project root directory
 pub fn project_root() -> Result<std::path::PathBuf> {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-        .context("CARGO_MANIFEST_DIR not set")?;
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").context("CARGO_MANIFEST_DIR not set")?;
 
     // xtask is in project_root/xtask, so go up one level
     let xtask_dir = std::path::PathBuf::from(manifest_dir);

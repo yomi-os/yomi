@@ -14,7 +14,7 @@ reorder_imports = true
 reorder_modules = true
 
 # Function and control flow formatting
-fn_args_layout = "Tall"
+fn_params_layout = "Tall"
 brace_style = "SameLineWhere"
 control_brace_style = "AlwaysSameLine"
 indent_style = "Block"
@@ -67,20 +67,9 @@ format_generated_files = false
 
 # Chain formatting for method calls (common in embedded)
 chain_width = 60
-chains_overflow_last = false
-
-# Closure formatting
-closure_block_indent_threshold = 7
-
-# Macro formatting
-macro_width = 100
 
 # Module and item ordering
 reorder_impl_items = true
-
-# Edition-specific formatting
-format_skip_children = false
-ignore = []
 
 # Conditional compilation formatting
 spaces_around_ranges = false
@@ -89,14 +78,11 @@ use_try_shorthand = false
 
 # Custom settings for kernel development
 # These ensure safety-critical code is clearly formatted
-version = "Two"
+style_edition = "2024"
 unstable_features = true
 
 # Ensure consistent formatting in match expressions (important for state machines)
 match_arm_leading_pipes = "Never"
-
-# Consistent spacing for embedded register access patterns
-spaces_within_parens_and_brackets = false
 
 # Documentation formatting
 doc_comment_code_block_width = 80

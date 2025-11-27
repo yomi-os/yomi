@@ -1,5 +1,10 @@
 use anyhow::Result;
-use crate::util::{print_step, print_success, run_cmd};
+
+use crate::util::{
+    print_step,
+    print_success,
+    run_cmd,
+};
 
 /// Build the kernel
 pub fn build_kernel(release: bool) -> Result<()> {

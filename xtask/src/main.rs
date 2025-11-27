@@ -7,13 +7,18 @@ mod test;
 mod util;
 
 use anyhow::Result;
-use clap::{Parser, Subcommand};
-use colored::Colorize;
-
 use build::build_kernel;
+use clap::{
+    Parser,
+    Subcommand,
+};
+use colored::Colorize;
 use debug::debug_kernel;
 use iso::create_iso;
-use qemu::{run_qemu, QemuMode};
+use qemu::{
+    QemuMode,
+    run_qemu,
+};
 use setup::setup_environment;
 use test::run_tests;
 
@@ -119,7 +124,13 @@ fn run() -> Result<()> {
 }
 
 fn clean() -> Result<()> {
-    use crate::util::{print_info, print_step, print_success, project_root, run_cmd};
+    use crate::util::{
+        print_info,
+        print_step,
+        print_success,
+        project_root,
+        run_cmd,
+    };
 
     print_step("Cleaning Build Artifacts");
 

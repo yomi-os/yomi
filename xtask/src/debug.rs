@@ -1,10 +1,21 @@
-use anyhow::{Context, Result};
 use std::process::Command;
 
-use crate::iso::create_iso;
-use crate::util::{
-    command_exists, ensure_file_exists, kernel_binary, print_info, print_step, print_warning,
-    project_root,
+use anyhow::{
+    Context,
+    Result,
+};
+
+use crate::{
+    iso::create_iso,
+    util::{
+        command_exists,
+        ensure_file_exists,
+        kernel_binary,
+        print_info,
+        print_step,
+        print_warning,
+        project_root,
+    },
 };
 
 /// Launch kernel in debug mode with GDB
@@ -21,10 +32,7 @@ pub fn debug_kernel(release: bool) -> Result<()> {
 
     // Ensure kernel binary exists (needed for symbols)
     let kernel_bin = kernel_binary(release)?;
-    ensure_file_exists(
-        &kernel_bin,
-        "cargo build --package yomi-kernel",
-    )?;
+    ensure_file_exists(&kernel_bin, "cargo build --package yomi-kernel")?;
 
     print_info(&format!("Kernel binary: {}", kernel_bin.display()));
     print_info(&format!("ISO image: {}", iso_path.display()));
@@ -61,6 +69,7 @@ continue
 
     let gdb_script_path = root.join("build/.gdbinit-temp");
     std::fs::create_dir_all(root.join("build"))?;
+    #[allow(clippy::disallowed_methods)]
     std::fs::write(&gdb_script_path, gdb_script)?;
 
     print_info("Starting QEMU with GDB server...");
@@ -77,11 +86,11 @@ continue
 
     // Start QEMU with GDB server
     let status = Command::new("qemu-system-x86_64")
-        .args(&[
+        .args([
             "-cdrom",
             iso_path.to_str().context("Invalid ISO path")?,
-            "-s",                // GDB server on port 1234
-            "-S",                // Pause at startup
+            "-s", // GDB server on port 1234
+            "-S", // Pause at startup
             "-serial",
             "stdio",
             "-no-reboot",

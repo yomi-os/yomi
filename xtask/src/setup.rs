@@ -1,7 +1,18 @@
-use anyhow::{Context, Result};
 use std::process::Command;
 
-use crate::util::{command_exists, print_error, print_info, print_step, print_success, print_warning};
+use anyhow::{
+    Context,
+    Result,
+};
+
+use crate::util::{
+    command_exists,
+    print_error,
+    print_info,
+    print_step,
+    print_success,
+    print_warning,
+};
 
 /// Setup development environment
 pub fn setup_environment() -> Result<()> {
@@ -31,7 +42,13 @@ fn setup_windows() -> Result<()> {
     if !command_exists("nasm") {
         print_info("NASM not found. Installing via winget...");
         let status = Command::new("winget")
-            .args(["install", "--id", "NASM.NASM", "-e", "--accept-source-agreements"])
+            .args([
+                "install",
+                "--id",
+                "NASM.NASM",
+                "-e",
+                "--accept-source-agreements",
+            ])
             .status()
             .context("Failed to run winget. Is winget installed?")?;
 
@@ -40,7 +57,9 @@ fn setup_windows() -> Result<()> {
             print_warning("Please restart your terminal to update PATH");
         } else {
             print_error("Failed to install NASM via winget");
-            print_info("Manual installation: https://www.nasm.us/pub/nasm/releasebuilds/3.01/win64/");
+            print_info(
+                "Manual installation: https://www.nasm.us/pub/nasm/releasebuilds/3.01/win64/",
+            );
         }
     } else {
         print_success("NASM is already installed");
@@ -50,7 +69,13 @@ fn setup_windows() -> Result<()> {
     if !command_exists("qemu-system-x86_64") {
         print_info("QEMU not found. Installing via winget...");
         let status = Command::new("winget")
-            .args(["install", "--id", "SoftwareFreedomConservancy.QEMU", "-e", "--accept-source-agreements"])
+            .args([
+                "install",
+                "--id",
+                "SoftwareFreedomConservancy.QEMU",
+                "-e",
+                "--accept-source-agreements",
+            ])
             .status()
             .context("Failed to run winget")?;
 
@@ -69,7 +94,13 @@ fn setup_windows() -> Result<()> {
     if !command_exists("ld.lld") {
         print_info("LLVM (ld.lld) not found. Installing via winget...");
         let status = Command::new("winget")
-            .args(["install", "--id", "LLVM.LLVM", "-e", "--accept-source-agreements"])
+            .args([
+                "install",
+                "--id",
+                "LLVM.LLVM",
+                "-e",
+                "--accept-source-agreements",
+            ])
             .status()
             .context("Failed to run winget")?;
 
@@ -86,9 +117,7 @@ fn setup_windows() -> Result<()> {
 
     // Check for WSL (needed for grub-mkrescue)
     print_info("Checking WSL availability for ISO creation...");
-    let wsl_check = Command::new("wsl")
-        .args(["--version"])
-        .output();
+    let wsl_check = Command::new("wsl").args(["--version"]).output();
 
     match wsl_check {
         Ok(output) if output.status.success() => {
@@ -167,7 +196,7 @@ fn setup_linux() -> Result<()> {
     // Install NASM
     if !command_exists("nasm") {
         print_info("Installing NASM...");
-        let mut cmd = Command::new(&install_cmd[0]);
+        let mut cmd = Command::new(install_cmd[0]);
         cmd.args(&install_cmd[1..]);
         cmd.arg("nasm");
         let status = cmd.status().context("Failed to install nasm")?;
@@ -187,7 +216,7 @@ fn setup_linux() -> Result<()> {
             "pacman" => "qemu-system-x86",
             _ => "qemu",
         };
-        let mut cmd = Command::new(&install_cmd[0]);
+        let mut cmd = Command::new(install_cmd[0]);
         cmd.args(&install_cmd[1..]);
         cmd.arg(qemu_pkg);
         let status = cmd.status().context("Failed to install QEMU")?;
@@ -208,7 +237,7 @@ fn setup_linux() -> Result<()> {
             _ => &["grub", "xorriso"],
         };
         for pkg in grub_pkgs {
-            let mut cmd = Command::new(&install_cmd[0]);
+            let mut cmd = Command::new(install_cmd[0]);
             cmd.args(&install_cmd[1..]);
             cmd.arg(pkg);
             let _ = cmd.status();
@@ -256,9 +285,7 @@ fn setup_macos() -> Result<()> {
 
     // Install xorriso (grub-mkrescue depends on it)
     print_info("Installing xorriso...");
-    let _ = Command::new("brew")
-        .args(["install", "xorriso"])
-        .status();
+    let _ = Command::new("brew").args(["install", "xorriso"]).status();
 
     print_warning("grub-mkrescue may not be available on macOS");
     print_info("Consider using a Docker container or VM for ISO creation");
@@ -283,7 +310,13 @@ fn setup_rust_components() -> Result<()> {
     // Add x86_64-unknown-none target
     print_info("Adding x86_64-unknown-none target...");
     let status = Command::new("rustup")
-        .args(["target", "add", "x86_64-unknown-none", "--toolchain", "nightly"])
+        .args([
+            "target",
+            "add",
+            "x86_64-unknown-none",
+            "--toolchain",
+            "nightly",
+        ])
         .status()
         .context("Failed to add target")?;
 

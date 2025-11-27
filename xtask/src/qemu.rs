@@ -1,8 +1,19 @@
-use anyhow::{Context, Result};
 use std::process::Command;
 
-use crate::iso::create_iso;
-use crate::util::{ensure_file_exists, print_info, print_step, project_root};
+use anyhow::{
+    Context,
+    Result,
+};
+
+use crate::{
+    iso::create_iso,
+    util::{
+        ensure_file_exists,
+        print_info,
+        print_step,
+        project_root,
+    },
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QemuMode {
@@ -44,8 +55,8 @@ fn get_qemu_path() -> Result<String> {
         }
 
         anyhow::bail!(
-            "QEMU not found. Install with: winget install SoftwareFreedomConservancy.QEMU\n\
-             Or run: cargo x setup"
+            "QEMU not found. Install with: winget install SoftwareFreedomConservancy.QEMU\nOr \
+             run: cargo x setup"
         );
     }
 
@@ -56,8 +67,7 @@ fn get_qemu_path() -> Result<String> {
         }
 
         anyhow::bail!(
-            "QEMU not found. Install with: sudo apt install qemu-system-x86\n\
-             Or run: cargo x setup"
+            "QEMU not found. Install with: sudo apt install qemu-system-x86\nOr run: cargo x setup"
         );
     }
 }

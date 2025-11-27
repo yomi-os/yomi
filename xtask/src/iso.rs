@@ -1,10 +1,22 @@
-use anyhow::{Context, Result};
-use std::fs;
-use std::process::Command;
+use std::{
+    fs,
+    process::Command,
+};
 
-use crate::build::build_kernel;
-use crate::util::{
-    kernel_binary, print_info, print_step, print_success, project_root,
+use anyhow::{
+    Context,
+    Result,
+};
+
+use crate::{
+    build::build_kernel,
+    util::{
+        kernel_binary,
+        print_info,
+        print_step,
+        print_success,
+        project_root,
+    },
 };
 
 /// Create a bootable ISO image
@@ -54,8 +66,8 @@ menuentry "YomiOS" {
 }
 "#;
 
-    fs::write(&grub_cfg, grub_config)
-        .context("Failed to write GRUB configuration")?;
+    #[allow(clippy::disallowed_methods)]
+    fs::write(&grub_cfg, grub_config).context("Failed to write GRUB configuration")?;
 
     // Create ISO using grub-mkrescue
     let iso_path = root.join("yomios.iso");
@@ -76,20 +88,21 @@ fn run_grub_mkrescue(iso_path: &std::path::Path, iso_dir: &std::path::Path) -> R
         let iso_path_wsl = windows_to_wsl_path(iso_path)?;
         let iso_dir_wsl = windows_to_wsl_path(iso_dir)?;
 
-        print_info(&format!("Using WSL path: {} -> {}", iso_dir.display(), iso_dir_wsl));
+        print_info(&format!(
+            "Using WSL path: {} -> {}",
+            iso_dir.display(),
+            iso_dir_wsl
+        ));
 
         let status = Command::new("wsl")
-            .args([
-                "grub-mkrescue",
-                "-o",
-                &iso_path_wsl,
-                &iso_dir_wsl,
-            ])
+            .args(["grub-mkrescue", "-o", &iso_path_wsl, &iso_dir_wsl])
             .status()
             .context("Failed to run grub-mkrescue via WSL. Run 'cargo x setup' first.")?;
 
         if !status.success() {
-            anyhow::bail!("grub-mkrescue failed. Ensure WSL has grub-pc-bin and xorriso installed.");
+            anyhow::bail!(
+                "grub-mkrescue failed. Ensure WSL has grub-pc-bin and xorriso installed."
+            );
         }
     }
 
@@ -103,7 +116,9 @@ fn run_grub_mkrescue(iso_path: &std::path::Path, iso_dir: &std::path::Path) -> R
                 iso_dir.to_str().context("Invalid ISO dir path")?,
             ])
             .status()
-            .context("Failed to run grub-mkrescue. Install with: sudo apt install grub-pc-bin xorriso")?;
+            .context(
+                "Failed to run grub-mkrescue. Install with: sudo apt install grub-pc-bin xorriso",
+            )?;
 
         if !status.success() {
             anyhow::bail!("grub-mkrescue failed");

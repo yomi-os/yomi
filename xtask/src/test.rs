@@ -1,9 +1,20 @@
-use anyhow::{Context, Result};
-use std::fs;
-use std::process::Command;
+use std::{
+    fs,
+    process::Command,
+};
+
+use anyhow::{
+    Context,
+    Result,
+};
 
 use crate::util::{
-    kernel_target_dir, print_error, print_info, print_step, print_success, print_warning,
+    kernel_target_dir,
+    print_error,
+    print_info,
+    print_step,
+    print_success,
+    print_warning,
     project_root,
 };
 
@@ -22,7 +33,7 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
     // Build the kernel first
     print_info("Building kernel for tests...");
     let build_status = Command::new("cargo")
-        .args(&[
+        .args([
             "build",
             "--package",
             "yomi-kernel",
@@ -79,7 +90,7 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
 
         // Build the test binary
         let build_result = Command::new("cargo")
-            .args(&[
+            .args([
                 "rustc",
                 "--manifest-path",
                 "kernel/Cargo.toml",
@@ -121,8 +132,7 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
                 path.file_name()
                     .and_then(|name| name.to_str())
                     .is_some_and(|name| {
-                        name.starts_with(&format!("{}-", test_name))
-                            && !name.ends_with(".d")
+                        name.starts_with(&format!("{}-", test_name)) && !name.ends_with(".d")
                     })
             });
 
@@ -138,7 +148,7 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
 
         // Run the test in QEMU
         let test_result = Command::new("qemu-system-x86_64")
-            .args(&[
+            .args([
                 "-kernel",
                 test_bin.to_str().context("Invalid test binary path")?,
                 "-serial",
@@ -163,7 +173,10 @@ pub fn run_tests(filter: Option<&str>) -> Result<()> {
             print_success(&format!("✓ Test passed: {}", test_name));
             passed += 1;
         } else {
-            print_error(&format!("✗ Test failed: {} (exit code: {})", test_name, exit_code));
+            print_error(&format!(
+                "✗ Test failed: {} (exit code: {})",
+                test_name, exit_code
+            ));
             failed += 1;
             failed_tests.push(test_name);
         }
