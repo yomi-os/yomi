@@ -1,72 +1,158 @@
-use std::env;
-use std::process::{exit, Command};
+mod build;
+mod debug;
+mod iso;
+mod qemu;
+mod setup;
+mod test;
+mod util;
+
+use anyhow::Result;
+use build::build_kernel;
+use clap::{
+    Parser,
+    Subcommand,
+};
+use colored::Colorize;
+use debug::debug_kernel;
+use iso::create_iso;
+use qemu::{
+    QemuMode,
+    run_qemu,
+};
+use setup::setup_environment;
+use test::run_tests;
+
+#[derive(Parser)]
+#[command(name = "xtask")]
+#[command(about = "YomiOS Build System", long_about = None)]
+#[command(version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Build the kernel
+    Build {
+        /// Build in release mode
+        #[arg(long)]
+        release: bool,
+    },
+
+    /// Build bootable ISO image
+    Iso {
+        /// Build in release mode
+        #[arg(long)]
+        release: bool,
+    },
+
+    /// Run kernel in QEMU
+    Run {
+        /// QEMU mode: run (normal), test, or debug
+        #[arg(long, default_value = "run")]
+        mode: String,
+
+        /// Build in release mode
+        #[arg(long)]
+        release: bool,
+    },
+
+    /// Run integration tests
+    Test {
+        /// Filter tests by name
+        #[arg(long)]
+        filter: Option<String>,
+    },
+
+    /// Launch kernel in debug mode with GDB
+    Debug {
+        /// Build in release mode
+        #[arg(long)]
+        release: bool,
+    },
+
+    /// Clean build artifacts
+    Clean,
+
+    /// Setup development environment (install dependencies)
+    Setup,
+}
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    if let Err(e) = run() {
+        eprintln!("{} {}", "Error:".red().bold(), e);
+        std::process::exit(1);
+    }
+}
 
-    match args.get(1).map(|s| s.as_str()) {
-        Some("build") => build(),
-        Some("run") => run(),
-        Some("test") => test(),
-        Some("clean") => clean(),
-        _ => {
-            print_help();
-            exit(1);
+fn run() -> Result<()> {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Command::Build { release } => {
+            build_kernel(release)?;
+        }
+
+        Command::Iso { release } => {
+            create_iso(release)?;
+        }
+
+        Command::Run { mode, release } => {
+            let qemu_mode = QemuMode::from_str(&mode)?;
+            run_qemu(qemu_mode, release)?;
+        }
+
+        Command::Test { filter } => {
+            run_tests(filter.as_deref())?;
+        }
+
+        Command::Debug { release } => {
+            debug_kernel(release)?;
+        }
+
+        Command::Clean => {
+            clean()?;
+        }
+
+        Command::Setup => {
+            setup_environment()?;
         }
     }
+
+    Ok(())
 }
 
-fn build() {
-    println!("🔨 Building Yomi Kernel...");
+fn clean() -> Result<()> {
+    use crate::util::{
+        print_info,
+        print_step,
+        print_success,
+        project_root,
+        run_cmd,
+    };
 
-    run_cmd("cargo", &["build", "--package", "yomi-kernel", "--release"]);
+    print_step("Cleaning Build Artifacts");
 
-    println!("✓ Build complete!");
-}
+    // Clean cargo build artifacts
+    run_cmd("cargo", &["clean"])?;
 
-fn run() {
-    build();
+    // Clean ISO build directory
+    let root = project_root()?;
+    let build_dir = root.join("build");
 
-    println!("🚀 Starting Yomi in QEMU...");
-
-    run_cmd("cargo", &["run", "--package", "yomi-kernel", "--release"]);
-}
-
-fn test() {
-    println!("🧪 Running tests...");
-
-    run_cmd("cargo", &["test", "--workspace"]);
-}
-
-fn clean() {
-    println!("🧹 Cleaning build artifacts...");
-
-    run_cmd("cargo", &["clean"]);
-
-    println!("✓ Clean complete!");
-}
-
-fn print_help() {
-    println!("Yomi Build System");
-    println!("");
-    println!("USAGE:");
-    println!("    cargo xtask <COMMAND>");
-    println!("");
-    println!("COMMANDS:");
-    println!("    build    Build the kernel");
-    println!("    run      Build and run in QEMU");
-    println!("    test     Run all tests");
-    println!("    clean    Clean build artifacts");
-}
-
-fn run_cmd(cmd: &str, args: &[&str]) {
-    let status = Command::new(cmd).args(args).status().unwrap_or_else(|e| {
-        eprintln!("Failed to execute {}: {}", cmd, e);
-        exit(1);
-    });
-
-    if !status.success() {
-        eprintln!("{} failed with exit code: {:?}", cmd, status.code());
-        exit(1);
+    if build_dir.exists() {
+        print_info("Removing build directory...");
+        std::fs::remove_dir_all(&build_dir)?;
     }
+
+    // Clean ISO image
+    let iso_path = root.join("yomios.iso");
+    if iso_path.exists() {
+        print_info("Removing ISO image...");
+        std::fs::remove_file(&iso_path)?;
+    }
+
+    print_success("Clean complete");
+    Ok(())
 }

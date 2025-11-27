@@ -48,8 +48,7 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build kernel
-        working-directory: kernel
-        run: cargo build --verbose
+        run: cargo x build
 
       # Note: Integration tests are disabled due to build-std incompatibility
       # with cargo test. These tests require QEMU and should be run manually
@@ -77,8 +76,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        working-directory: kernel
-        run: cargo clippy --lib --bins -- -D warnings
+        run: cargo clippy --package yomi-kernel --target x86_64-unknown-none -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --lib -- -D warnings
 
   build:
     name: Build
@@ -99,12 +97,10 @@ jobs:
           sudo apt-get install -y nasm
 
       - name: Build kernel (debug)
-        working-directory: kernel
-        run: cargo build --verbose
+        run: cargo x build
 
       - name: Build kernel (release)
-        working-directory: kernel
-        run: cargo build --release --verbose
+        run: cargo x build --release
 
       - name: Upload kernel artifact
         uses: actions/upload-artifact@v4

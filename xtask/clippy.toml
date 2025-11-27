@@ -1,0 +1,15 @@
+# Clippy configuration for xtask
+# xtask runs on the host system with full std library access
+# Override the kernel-specific restrictions from the root clippy.toml
+
+# Allow standard library usage (xtask is not no_std)
+disallowed-methods = []
+disallowed-types = []
+
+# Copy other settings from root
+avoid-breaking-exported-api = true
+cognitive-complexity-threshold = 50
+type-complexity-threshold = 500
+too-many-arguments-threshold = 8
+too-many-lines-threshold = 300
+msrv = "1.88.0"
